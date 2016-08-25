@@ -1,6 +1,5 @@
 open tigerabs
-fun puto [] = []
-|	puto (x::xs) = xs
+
 fun getBodys []        = []
 |  getBodys ((stuff,p)::xs) = ((fn (n,p,r,b) => b) stuff ) :: (getBodys xs)
 
