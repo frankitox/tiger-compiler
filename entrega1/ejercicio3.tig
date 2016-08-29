@@ -1,0 +1,46 @@
+let
+  /* define a tree */
+  type tree = { key: int,
+                children: treelist }
+  type treelist = { hd: tree,
+                    tl: treelist }
+  type bool = int
+  var True  := 1
+  var False := 0
+
+  function length (t: treelist): int =
+    if t = nil then 0
+    else 1 + length (t.tl)
+  function isBin (t: tree): bool =
+    if t = nil then True
+    else (length (t.children) <= 2)
+       & isBin (t.children.hd)
+       & isBin (t.children.tl.hd)
+  function max (n: int, m: int): int =
+    if n < m then m else n
+  function height (t: tree): int =
+    if t = nil then 0
+    else 1 + max (height (t.children.hd),
+                  heightTreeList (t.children.tl))
+  function heightTreeList (tl: treelist): int =
+    if tl = nil then 0
+    else max (height (tl.hd),
+              heightTreeList (tl.tl))
+  function isBComplete (t: tree): bool =
+    isBin(t)
+    & height (t.children.hd) = height (t.children.tl.hd)
+    & isBComplete (t.children.hd)
+    & isBComplete (t.children.tl.hd)
+  /* Asumo que es para árboles binarios */
+  function printInOrder (t: tree) =
+    /* Crappy parenthesized notation begins... */
+    if t <> nil then (
+      ( if t.children <> nil then
+         printInOrder (t.children.hd) );
+      print (t.key);
+      if t.children <> nil & t.children.tl <> nil then
+        printInOrder (t.children.tl.hd)
+    )
+in
+  0
+end
