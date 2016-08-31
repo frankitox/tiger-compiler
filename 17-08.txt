@@ -1,0 +1,257 @@
+17-08
+
+Descripción de Tiger
+Es un lenguaje de tipo imperativo, con dos tipos de datos primitivos (int y string). Admite funciones anidadas, mutuamente recursivas, es de tipado estático, permite definir arreglos y records, mutuamente recursivos.
+
+Sintaxis:
+- tiene números (en decimal) y strings
+- tiene operaciones aritméticas: +,-,*,/
+- tiene comparaciones: >,<,>=,<=,<> (distinto),=. Las comparaciones dan 1 ó 0. En general, cualquier expresión distinta de cero será true, e igual a 0, false.
+- tiene conectivos: &(and), |(or), not. Tiene semántica de cortocircuito (lazy).
+A&B == if A then B else false
+A|B == if A then true else B
+- tiene if como expresión: if expr1 then expr2 else expr3, donde expr2 y expr3 tienen el mismo tipo.
+- tiene asignacion: var:= expr
+- tiene secuencia: expr1;expr2, donde el tipo de expr2 es el tipo para toda la secuencia
+- tiene if como sentencia: if expr1 then expr2
+Se puede tener a:= if a then expr1 else expr2, pero no a:= if a then expr
+- tiene while: while expr1 do expr2
+- tiene for: for var:=expr1 to expr2 do expr3
+En este caso; 
+var no se declara. 
+expr2 no se reevalua en cada iteración.
+var sólo se ve en expr3.
+var no se puede asignar en expr3 (read-only).
+- no tiene go to, pero tiene break
+- tiene let: 
+let 
+	declaraciones
+in
+	expr
+end.
+Donde el valor del let es del tipo expr, y las declaraciones son visibles sólo en expr.
+- tiene invocación a funciones: id (expr,..)
+- tiene unit (nada): (). Unit no se puede asignar.
+
+
+Declaraciones
+
+- de variables: 
+var:=expr 	 ó 	 var id:tipo := expr
+Las variables se pueden redefinir.
+var i:=10
+var i:=i+1
+var i:="hola"
+- de funciones
+function id(arg1:tipo1, arg2:tipo2 ...):tipo = expr
+donde tipo es opcional, y no se agrega si la función no devuelve nada.
+Las declaraciones de funciones adyacentes pueden ser mutuamente recursivas.
+
+- de tipos
+type id1=id2 un sinónimo
+NB: int y string NO son palabras reservadas. Se permite esto:
+let
+	type T = int
+	type int = string    
+	type string = T
+	var i:string = 10
+	var s:int = "hola"
+in
+	0
+end
+NB: no se admiten ciclos
+	type A = B
+	type B = A
+
+- records
+type id ={m1:tipo1, m2:tipo2, ..} acá SI se pueden tener ciclos
+Expresión para crear un record: tipo{m1 = expr1, m2 = expr2, ..}
+Expresión de record nulo: nil 
+Acceso a miembros: id.m
+Declaración:
+let
+	type R = {}
+	var r:R := nil
+in 0 end
+Acá sí o sí tengo que poner el :R, porque nil es polimórfico.
+
+- arreglos
+type id = array of tipo
+Un arreglo se crea con 
+tipo [expr] of expr (valor inicial)
+
+
+Comentarios /* */ anidables.
+Todo programa Tiger debe devolver un entero
+Procedimientos: programas que no devuelven nada, devuelven unit.
+
+Runtime de Tiger:
+Nombre tipo
+print string->()
+flush ()->()
+getchar ()->string (o caracter)
+ord string->int (te da el ASCII)
+chr int->string
+size string->int
+substring string,int,int->string
+concat string,string->string
+not int->int
+exit int->()
+
+
+Lenguaje host: Standard ML.
+
+Bib.:
+- STANDARD ML 97 Programming, J. Ullman
+- ML for the Working Programmer, L. Paulson
+
+Comparacion con Haskell.
+
+- Generales
+Haskell usa la indentación para indicar subordinación, ML no lo necesita.
+Comentarios: -- y {- -}   vs   (* *) anidables
+Lazy vs Eager
+
+- Valores: 
+1,-1::Int vs 1:int, ~1:int
+True :: Bool vs true:bool
+[1,2]::[Int] vs [1,2]:int list
+(1,True)::(Int,Bool) vs (1,true):int*bool
+
+- Funciones
+f x = 2*x vs fun f x = 2 * x
+Int -> Int vs int -> int
+Mutuamente recursivas:
+f x = g x, g x = f x   vs  fun f x = g x and g x = f x
+let+where vs let (con el end)
+
+- Variables
+x = 10  vs  val i = 10
+
+Ambos tienen PatternMatching. En ML es:
+fun fact 0 = 1
+| fact n = n*fact(n-1)
+head == hd
+tail == tl
+x:xs == x::xs
+l1++l2 == l1@l2
+
+- Funciones anónimas
+\x -> 2*x  == fn x => 2*x
+pero ML admite pattern matching
+val rec fact = fn 0 => 1 | n=>n*fact(n-1)
+
+- Excepciones
+Haskell no tiene en base. En ML es:
+exception E (*definición*)
+exception F of string (*lanzamiento*)
+raise E
+raise F "auch" 
+(*se capturan*)
+(expr) handle E => resultado1
+| F s => ....
+
+- Secuencia de expresiones
+Haskell usa mónadas.
+En ML, secuencias: expr1;expr2;...
+
+- Módulos
+Haskell tiene, se traen con import.
+ML tiene, se llaman structures. Se usan directamente: List.map
+Si no querés escribir "List." podés abrir el módulo con open: open List. Esto trae todos los nombres
+
+- Definiciones locales persistentes.
+Haskell no tiene, ML si, se usa local.
+local
+	definiciones1 (*locales estáticos*)
+in
+	definiciones2 (*se convierten en públicas*)
+end
+
+- Definiciones de tipos algebraicos.
+data T t = V | N (t, T t, T t)
+vs
+datatype ´t T = V | N of ´t * ´t T * ´t T
+
+- Sintactic Sugar
+(+)  vs op+
+(2+) vs no tiene
+(+2) vs no tiene
+listas por comprensión vs no tiene
+Aunque no lo necesita.
+
+map (2+) [1,2,3], veamos qué hacer en ML.
+infix rs ls
+fun f rs x = fn y => f(y,x)
+fun f ls x = fn y => f(x,y)
+map (op+ rs 2) [1,2,3]
+
+[(x,y) | x<-[1,2,3], y<-[10,20,30], x<y] , veamos qué hacer en ML.
+fun mapend _ [] = []
+| mapend f (h::t) = f h @ mapend
+mapend (fn x => mapend ( fn y => if x<y then [(x,y)] else [] ) [10,20,30]) [1,2,3]
+
+
+Toda estructura tiene una signatura. Una estructura es una colección de valores. Su signatura es la colección de tipos de esos valores.
+Ej,
+signature S = 
+sig
+	val x:int
+	val y:int->int
+end
+structure ST1:>S = (*le estoy diciendo q la estructura ST1 tiene la signatura S*)
+struct
+	val x = 100
+	fun y n = n+1
+	val z = true (*no se ve de afuera, porque no esta en la signatura S.*)
+end
+ST1.y ST1.x;
+open ST1;
+y x;
+
+
+fun qs [] = []
+| qs(h::t) = 
+	let val (me,M) = List.partition (fn x => x<=h) t in (qs me)@[h]@(qs M) end
+Si vos hacés esto, ML te dice que qs sirve sólo para enteros.
+qs = fn:int list -> int list
+Segundo intento>
+fun qs _ [] = []
+| qs cmp (h::t) = 
+	let val (me,M) = List.partition (fn x => cmp(x,h) ) t in (qs cmp me)@[h]@(qs cmp M) end
+qs = fn:(´a * ´a -> bool) -> ´a list -> ´a list
+
+functor QS (s:sig type t val cmp : t*t->bool end) = 
+struct
+	fun qs [] = []
+	| qs (h::t) = 
+		let val(me,M) = List.partition (fn x => s.cmp(x,h)) t in qs me @ [h] @ qs M end
+
+structure QSI = QS(struct type t=int, val cmp= op<= end);
+QSI.qs [9,8,7,6];
+
+
+Dos datatypes importantes:
+
+1) option (Maybe)
+datatype ´a option = NONE | SOME of ´a
+se puede desarmar con pattern matching.
+case opt of NONE => ....
+		  | SOME v => ...
+
+val valOf : ´a option -> ´a (sino levanta exception)
+
+2) reference
+datatype ´a ref = ref of ´a
+Sirve para tener valores mutables. Se usa con 2 funciones
+!: a´ ref -> ´a
+:= : a´ ref * ´a -> unit
+
+(val r = ref 10) == (int *v; v=malloc(sizeof int); *v = 10;)
+!r == *v
+(r:=11) == (*v = 11)
+
+
+
+
+

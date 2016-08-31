@@ -1,0 +1,31 @@
+29-08
+
+Sintaxis abstracta de Tiger (tigerabs.sml)
+
+Especificación del scammer para Tiger. El scammer es un autómata finito. Hay que dar las expresiones regulares para poder crearlo.
+Esquema
+{
+	codigo ML
+}
+abreviaturas
+rule Nombre = 
+	parse
+		er1 {accion}
+		...
+		...
+and Nombre = 
+	parse
+		er1 {accion}
+		...
+		...
+
+
+vemos tigerlex.lex
+
+vemos tigergrm.y
+
+
+
+
+
+

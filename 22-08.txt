@@ -1,0 +1,101 @@
+22-08
+
+Consideraciones generales:
+
+- Un compilador puede ser broad o narrow. Ambos se implementan como una línea de montaje:
+
+broad : cada etapa se aplica a todo el fuente. 
+Desventaja: maneja fuentes ¨chicos¨. 
+Ventaja: Es más sencillo.
+
+narrow: cada etapa se aplica a la mínima secuencia que permita ser compilada. 
+Desventaja: La lógica es más complicada.
+Ventaja: Permite compilar fuentes grandes.
+
+Tiger será broad, con una sola excepción.
+
+- ¨Adhiero escrupulosamente a la observación del brillante físico teórico Ludwig Baltzmann de que, en ciencia, las cuestiones de elegancia hay que dejarlas al sastre y al zapatero.¨ A. Einstein
+
+Etapa de scamming y parsing.
+
+El scamming consume el fuente (secuencia de ASCIIs) y traa de reconocer ciertas secuencias (palabras claves, constantes numéricas, identificadores, etc.), y las convierte en tokens (símbolos). Aparte va a saltear blancos, contar la cantidad de líneas leídas, ignorar comentarios, etc.
+El parsing consume tokens y verifica que la secuencia de tokens corresponda a un programa que cumpla con la sintaxis del lenguaje.
+
+Jerarquía de Chomsky (década del 50): Es una jerarquía de 4 tipos de gramáticas.
+- 0 (Gramáticas generales)             - Máquina de Turing 
+- 1 (Gramáticas Sensibles al Contexto) - Autómatas Lineales
+- 2 (Gramáticas Libres de Contexto)    - Autómatas Push Down (o de Pila)
+- 3 (Expresiones Regulares)            - Autómatas Finitos
+Donde si le número de una gramática es i, y el otro j (i<j) entonces la primer gramática está incluida en la segunda.
+Nosotros vamos a usar Gramáticas Libres de Contexto (2) y Expresiones Regulares (3).
+
+Expresiones Regulares
+Dado un alfabeto A finito
+a) Un caracter c de A es una ER.
+b) Si e1 y e2 son ER, la concatenación e1e2 es una ER.
+c) Si e1 y e2 son ER, la alternación e1 | e2 es una ER. A|B = {´A´,´B´}
+d) Si e es una ER, e* es una ER (estrella de Kleene). A* = {´´,´A´,´AA´,...} 
+Precedencia: concatenación, alternación, estrella de Kleene
+Agregamos 
+= Clausura positiva: e+ = e(e*).
+= Clases (Ci de A):
+[C1,C2,C3,...,Ck] == C1|C2|C3|...|Ck
+= Clases negadas (Ci de A):
+[^C1,C2,C3,...,Ck] == C1´ | C2´ | C3´ |...| Ck´ , Ci´ en A - {C1,C2,..,Ck}
+
+Autómatas finitos.
+Un AF será formado por un conjunto finito de estados, un conjunto finito de transiciones entre estados, y dos estados definidos (begin y end).
+Un AF puede tener muchos estados, pero el número de estos estados, una vez hecho, es fijo.
+Supongamos que tenemos un AF con N estados. Si este AF reconoce strings S con size S>N, tendremos un ciclo. (Lema de inyección, o lema del bombeo)
+Este lema permite demostrar que no existe ninguna ER que sólo reconozca strings de este tipo:
+(^k )^k, ningún ) antes de (, k arbitrario.
+
+Gramáticas Libres de Contexto (GLC).
+Una GLC está formada por:
+- Un conjunto finito T de terminales o tokens.
+- Un conjunto finito NT de no-terminales, tal que N and T == 0
+- Un elemento distinguido start de NT
+- Un conjunto finito de reglas de producción de la forma:
+alpha : secuencia de 0 o más beta. alpha en NT, beta en (NT or T) 
+Ejemplo: una GLC que reconoce (^k )^k, ningún ) antes de (, k arbitrario.
+T = { (, ) }, NT = {S}, start = S
+reglas:
+S: /*vacio*/
+S: (S)
+Por supuesto, problemas nuevos.
+Una GLC para operaciones aritméticas con constantes?
+T = { N, +, *, (, ) }
+NT = {expr}
+start = expr
+reglas:
+	expr : N
+		 | expr + expr
+		 | expr * expr
+		 | (expr)
+y aparecen los problemas. 2+3*4 lo puedo parsear de 2 formas. Este problema se conoce como shift_reduce y es típico de una gramática ambigua. 
+if (a>b)
+	if (b>c)
+		printf(¨a¨);
+	else
+		printf(¨b¨);
+Este else, ¿a quién pertenece? Dangling else.
+Si los terminales son los mismos, asociatividad. Si son distintos, precedencia.
+Soluciones:
+a) Ignorar el problema.
+b) Reescribir la gramática, agregando más no-terminales y reglas de producción.
+c) Usar directivas, indicando cómo resolver la ambiguedad.
+Vamos a usar c, agregamos a nuestra GLC estas directivas.
+%left + 
+%left *
+(precedencia creciente hacia abajo).
+Otras directivas
+%right a derecha.          Ejemplos: a=b=c; a::b::c::[]
+%nonassoc (no asociativo). Ejemplo: a<b<c;
+
+Otro problema mucho más grave, es cuando GLC tiene 2 o más reglas.
+alpha1:beta
+alpha2:beta
+Este es conocido como conflicto reduce/reduce
+Hay que cambiar la gramática.
+
+{expresiones regulares p/tokens} -> mosmllex -> AF

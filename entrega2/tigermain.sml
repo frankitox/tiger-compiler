@@ -26,11 +26,11 @@ fun main(args) =
 			| [] => std_in
 			| _ => raise Fail "opcio'n dsconocida!"
 		val lexbuf = lexstream entrada
-		val expr = prog Tok lexbuf handle _ => errParsing lexbuf (*en AST*)
-		val _  = findEscape(expr) (*no nos interesa el resultado*)
+		val expr = prog Tok lexbuf handle _ => errParsing lexbuf
+		val _ = findEscape(expr)
 		val _ = if arbol then tigerpp.exprAst expr else ()
 	in
-		transProg(expr); (*definida en tigersemant*)
+		transProg(expr);
 		print "yes!!\n"
 	end	handle Fail s => print("Fail: "^s^"\n")
 

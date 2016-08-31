@@ -9,22 +9,19 @@ fun dec r = (r:=(!r-1); !r)
 fun aHex n =
 	"\\x"^(if n<=15 then "0" else "")^
 	(Int.fmt StringCvt.HEX n)
-fun ctrl0 "\\n" = "\\x0a" (*ellos escriben fun ctrl0 "\\n" = "\n" *)
-| ctrl0 "\\t" = "\\x09"   (*ellos escriben fun ctrl0 "\\t" = "\t" *)
+fun ctrl0 "\\n" = "\\x0a"
+| ctrl0 "\\t" = "\\x09"
 | ctrl0 _ = raise Fail "error interno 1 en lex!"
 fun ctrl1 s =
-	let	val c = ord(hd(tl(tl(explode s))))  (* explode s transforma el string s en una lista de caracteres 
-											   como todos tienen 3 caracteres, desecho los 2 primeros tl(tl())
-											   y me quedo con el primero hd()*)
+	let	val c = ord(hd(tl(tl(explode s))))
 	in	aHex(c-ord(#"@")) end
 fun ctrl2 s =
 	let	val n = ord(valOf(Char.fromString s))
 	in	aHex n end
 exception noEsta
 val pal_claves = Polyhash.mkPolyTable(20, noEsta)
-val _ = List.app (fn(c, v) => Polyhash.insert pal_claves (c, v)) 
-(*app es un map que produce efectos laterales, no que devuelve un valor*)
-	[("type",		TYPE), (* palabra_clave, token *)
+val _ = List.app (fn(c, v) => Polyhash.insert pal_claves (c, v))
+	[("type",		TYPE),
 	("array",		ARRAY),
 	("of",			OF),
 	("var",			VAR),
@@ -79,8 +76,8 @@ rule Tok = parse "/*"	{ inc ncom; Com lexbuf }
 	| `/`				{ DIV }
 	| `"`				{ LITERAL(literal lexbuf) }
 	| D+				{ NRO(atoi(getLexeme lexbuf)) }
-	| MN+				{ clav_id(getLexeme lexbuf) } (* son las palabras claves o identificadores*)
-	| L LDU*			{ ID(getLexeme lexbuf) }	  (* sabemos q no es una palabra clave, porque la hubiese parseado arriba *)
+	| MN+				{ clav_id(getLexeme lexbuf) }
+	| L LDU*			{ ID(getLexeme lexbuf) }
 	| _					{ raise Fail("lex:["^getLexeme(lexbuf)^"]!") }
 and literal = parse eof	{ raise Fail "string sin terminar! " }
 	| `\n`				{ raise Fail "NL en string!" }

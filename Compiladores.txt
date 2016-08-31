@@ -1,0 +1,9 @@
+Compiladores
+
+Se aprueba con un compilador que funcione. Un compilador involucra, al menos, tres lenguajes:
+- Un lenguaje fuente (source), que es el lenguaje a compilar: Tiger.
+- Un lenguaje destino (target), a qué se compila: a elección. 
+- Un lenguaje de implementación (host): Standard ML (ver Haskell)
+
+Bibliografía:
+- Modern Compiler Implementation in ML. Andrew Appel, Cambridge University Press

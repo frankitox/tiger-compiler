@@ -1,0 +1,31 @@
+
+let 
+	type lista = { item: int , resto: lista }
+	function cons(i: int,l: lista) = lista{item = i, resto= l}
+	function length1(l: lista): int =
+		let 
+			var r := 0 
+		in 
+			while l<>nil do (r:= r+1;l:= l.resto);
+			r
+		end
+	function length2(l: lista) : int = if l<>nil then 1+length2(l.resto)  else 0
+	function concat(l1:lista, l2:lista) = 
+		if l1=nil then l2 else
+			cons( l1.item, concat(l1.resto,l2) )
+	function snoc(x:int, l:lista) = concat(l , cons(x, nil) )
+	function filter(n:int, l:lista) = 
+		if l=nil then l else (
+			let var r := filter(n,l.resto) in
+			if l.item=n then r else cons(n,r)
+			end
+		)
+    function isin (x:int, l:lista)  = if l = nil then 0 
+                                                else (if l.item = x then 1 else isin(x, l.resto) )
+    function remove (x:int, l:lista) = if l = nil then l else ( if l.item = x then l.resto else remove(x,l.resto) )
+
+in
+	print( chr(length1( lista{item=1,resto= lista{item=2,resto=nil} } )+ord("A")) );
+	print( chr(length2( lista{item=1,resto= lista{item=2,resto=nil} } )+ord("A")) );
+	0
+end
