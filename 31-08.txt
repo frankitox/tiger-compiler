@@ -1,0 +1,67 @@
+31-08	
+
+código fuente -> lexer/parser -> AST -> escapes -> AST -> tipado
+
+lexer/parser tenemos 3 archivos:
+-tigerlex.lex
+-tigergrm.y
+-tigernlin.sml
+
+AST tenemos varios más:
+-tigerabs.sml
+-tigerpp.sml
+
+escapes:
+-tigerescap.sig/sml
+
+Primera etapa: Tipado.
+
+Si se pasa esta etapa, debería salir código ejecutable (excepto el break).
+
+function f(x:int):int = 
+	let
+		type t = int
+		var y:= 10
+		function g(z:t):int = x+y+z
+	in
+		g(z*x)
+	end
+
+Vamos a tener 2 tablas: la de tipos y la de funciones y variables.
+En el ejemplo,
+
++ typeneviroment (tenv)
+
+nombre | info
+  t    | sinónimo de int
+
++ variable enviroment (venv)
+
+nombre | info
+  x    | tipo int, ..
+  y    | tipo int, ..
+  z    | tipo t  , ..
+  g    | fn que toma t y devuelve tipo int, ..
+  f    | fn que toma int y devuelve tipo int, ..
+
+En esta etapa de tipado tenemos: 
+- las tablas en tigertab.sig/sml
+- los tipos en tigertips.sml
+- las vars/fns en tigersres.sml
+- los temporarios en tigertemp.sml
++ la parte de tipado (a completar) en 
+	- tigersemant.sml/sig
+	- topsort.sml
+	- tigermain.sml (ver cambios)
+
+ 
+
+
+
+
+
+
+
+
+
+
