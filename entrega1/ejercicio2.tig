@@ -1,0 +1,68 @@
+let
+  type lista = {item: int, resto: lista }
+
+  function cons (new_item: int, list: lista) : lista =
+    lista {item = new_item, resto = list}
+  function length (list: lista) : lista =
+    if (list = nil) then 0 else 1 + length (list.resto)
+  function concat (fst: lista, snd: lista) : lista =
+    if (fst = nil) then snd
+    else lista { item  = fst.item,
+                 resto = concat (fst.resto, snd) }
+  function snoc (n: int, xs: lista) : lista =
+    if (xs = nil) then lista { item = n,
+                               resto = nil }
+    else lista { item  = xs.item,
+                 resto = snoc (n, xs.resto) }
+  function filtra (n: int, xs: lista) : lista =
+    if (xs = nil) then xs
+    else if (n = xs.item) then filtra (n, xs.resto)
+    else lista { item  = xs.item,
+                 resto = filtra (n, xs.resto) }
+  function isin (n: int, xs: lista) : int = 
+    if (xs = nil) then xs
+    else if (n = xs.item) then 1
+    else isin (n, xs.resto)
+  function remove (n: int, ns: lista) : lista =
+    let
+      function real_remove (n: int, ns: lista) : lista =
+        if n = ns.item then ns.resto
+        else lista { item  = ns.item,
+                     resto = real_remove (n, ns.resto) }
+    in
+      if isin (n, ns) then real_remove (n, ns)
+      else ns
+    end
+  function removeall (n: int, ns: lista) : lista =
+    if ns = nil then ns
+    else if n = ns.item then ns.resto
+    else lista { item  = ns.item,
+                 resto = removeall (n, ns.resto) }
+  function reverse (ns: lista) : lista =
+    if ns = nil then ns
+    else concat (ns.resto,
+                 lista { item  = ns.item,
+                         resto = reverse (ns.resto) } )
+  function printlist (ns: lista) =
+    let
+      function mod_ten (n: int): int =
+        if n < 10 then n
+        else mod_ten (n / 10)
+      function int_to_string (n: int): string =
+        if n < 10 then chr (n + 48)
+        else concat (int_to_string (n / 10),
+                     chr (mod_ten (n) + 48))
+      function printlist_more (ns: lista) =
+        if ns = nil then print ("]")
+        else ( print (", ");
+               print (int_to_string (ns.item));
+               printlist_more (ns.resto) )
+    in
+      if ns = nil then print ("[]")
+      else ( print ("[");
+             print (int_to_string (ns.item));
+             printlist_more (ns.resto) )
+    end
+in
+  0
+end
