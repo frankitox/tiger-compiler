@@ -47,22 +47,22 @@ fun tiposIguales (TRecord _) TNil = true
   | tiposIguales TNil (TRecord _) = true 
   | tiposIguales (TRecord (_, u1)) (TRecord (_, u2 )) = (u1=u2)
   | tiposIguales (TArray (_, u1)) (TArray (_, u2)) = (u1=u2)
-  | tiposIguales (TTipo _) b =
+  | tiposIguales (TTipo _) b = raise Fail "No debería pasar! (1)"
 		(* let *)
 		(* 	val a = case !r of *)
 		(* 		SOME t => t *)
 		(* 		| NONE => raise Fail "No debería pasar! (1)" *)
 		(* in *)
 		(* 	tiposIguales a b *)
-		(* end *)raise Fail "No debería pasar! (1)"
-  | tiposIguales a (TTipo _) =
+		(* end *)
+  | tiposIguales a (TTipo _) = raise Fail "No debería pasar! (2)"
 		(* let *)
 		(* 	val b = case !r of *)
 		(* 		SOME t => t *)
 		(* 		| NONE => raise Fail "No debería pasar! (2)" *)
 		(* in *)
 		(* 	tiposIguales a b *)
-		(* end *)raise Fail "No debería pasar! (2)"
+		(* end *)
   | tiposIguales a b = (a=b)
 
 (* val transExp : venv * tenv -> expty *)
@@ -139,17 +139,23 @@ fun transExp(venv, tenv) =
 				val exprs = map (fn{exp, ty} => exp) lexti
 				val {exp, ty=tipo} = hd(rev lexti)
 			in	{ exp=(), ty=tipo } end
-		| trexp(AssignExp({var=SimpleVar s, exp}, nl)) =
-			let
-				val t1 = tabSaca(s,venv) 
-				val t2 = trexp exp
-			in
-				if tiposIguales t1 (#ty(t2)) then
-					{exp=(), ty=TUnit}
-				 else error("missmatch de tipos en simplevar", nl)
+		| trexp(AssignExp({var = SimpleVar s, exp}, nl)) =
+			let 
+				val t1 = tabSaca(s,tab_tipos)
+				val t2 = #ty(trexp exp)	
+			in 
+				if tiposIguales t1 t2 then {exp=(), ty=TUnit} 
+									  else error("Error de tipo en simplevar", nl)
 			end
+			(*VER CASO DE ERROR CUANDO LA VARIABLE NO ESTA DECLARADA*)
 		| trexp(AssignExp({var, exp}, nl)) =
-			{exp=(), ty=TUnit} (*COMPLETAR*)
+			let 
+				val t1 = #ty(trvar (var,nl) )
+				val t2 = #ty(trexp exp)	
+			in 
+				if tiposIguales t1 t2 then {exp=(), ty=TUnit} 
+									  else error("Error de tipo en asignacion", nl)
+			end
 		| trexp(IfExp({test, then', else'=SOME else'}, nl)) =
 			let val {exp=testexp, ty=tytest} = trexp test
 			    val {exp=thenexp, ty=tythen} = trexp then'

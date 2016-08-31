@@ -1,0 +1,12 @@
+25-08
+
+val x = {A = 10, B = ´hola´, C = true};
+x:{A:int, B:string, C:bool}
+
+#C(X);
+
+val y = {1 = 10, 2 = ¨hola¨, 3 = false};
+y: int * string * bool
+(porque los campos tienen los numeros 1,2,3)
+fst y = #1(y)
+snd y = #2(y)

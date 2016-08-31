@@ -1,0 +1,23 @@
+24-08
+
+expr before expr es legal, se usa para saber si algo anda , algo en especial.
+
+/*Incluir esta funcion cuando necesite pasar de int a str */
+function mod (m:int, n:int) : int = m-m/n*n
+function int (n:int): string = if n = 0 then ¨0¨ else let
+														function int (n:int) : string =
+															if n = 0 then ¨0¨ 
+																	 else concat( int(n/10), chr(ord(¨0¨)+mod(n,10) )) 
+													  in
+													  	int(n) end
+
+
+Strings en Tiger (similar a ML).
+Se encierra entre ¨. Los caracteres imprimibles van tal cual. Admite también \n,\t,\¨,\\. Aparte:
+- \^c == chr(ord(c) - ord(¨@¨)). Ejemplo \^@ = 0, \^A = 1
+- \ddd (3 dígitos decimales) = chr(ddd)
+
+Un string puede partirse así:
+¨abc\
+\def\            
+ \xyz¨ == ¨abcdefxyz¨.
