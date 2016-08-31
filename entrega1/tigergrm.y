@@ -18,8 +18,8 @@ fun fundeLFunTipos(TypeDec[dt], (TypeDec(hdt))::t) =
 %token EOF
 %token TYPE ARRAY OF VAR FUNCTION
 %token LET IN END IF THEN ELSE WHILE DO FOR TO BREAK
-%token PTO DOSP DOSPIG COMA PCOMA IGUAL PI PD CI CD LI LD  (* PI = (, PD = ), LI = {, LD = } *)
-%token AMPER PIPE MENOR MENIG MAYOR MAYIG DIST 	(* PIPE = |, AMPER = & *)
+%token PTO DOSP DOSPIG COMA PCOMA IGUAL PI PD CI CD LI LD  /* PI = (, PD = ), LI = {, LD = } */
+%token AMPER PIPE MENOR MENIG MAYOR MAYIG DIST 	/* PIPE = |, AMPER = & */
 %token MAS MENOS POR DIV MENOS NIL
 %token<int> NRO
 %token<string> LITERAL ID
@@ -43,13 +43,13 @@ fun fundeLFunTipos(TypeDec[dt], (TypeDec(hdt))::t) =
 %left ELSE
 %nonassoc DO
 %nonassoc OF
-%nonassoc DOSPIG (*DOSPIG == :=*)
+%nonassoc DOSPIG /*DOSPIG == :=*/
 %left PIPE
 %left AMPER
 %nonassoc IGUAL MENOR MENIG MAYOR MAYIG DIST
 %left MAS MENOS
 %left POR DIV
-%right UMENOS (*este lo agregaron en clase*)
+%right UMENOS /*este lo agregaron en clase*/
 
 %start prog
 %%
@@ -103,7 +103,7 @@ explist: exp PCOMA explist	{ $1::$3 }
 	;
 rec_fields : id IGUAL exp COMA rec_fields 	{ ($1, $3)::$5 }
 	| id IGUAL exp							{ [($1, $3)] }
-(*	|										{ [] }	esta rule la borraron*)
+/*	|										{ [] }	esta rule la borraron*/
 	;
 decs : dec decs				{ fundeLFunTipos($1, $2) }
 	|						{ [] }

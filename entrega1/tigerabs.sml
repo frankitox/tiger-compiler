@@ -5,8 +5,8 @@ type symbol = string
 type pos = int
 (* El escape indica si una funcion es usada por una funcion anidada. Ref significa que puede mutar *)
 datatype var = SimpleVar of symbol (* x *)
-	| FieldVar of var * symbol	   (* x.y *)
-	| SubscriptVar of var * exp    (* x[y] *)
+	| FieldVar of var * symbol	   (* x.y.z  == FieldVar(x.y, z) *)
+	| SubscriptVar of var * exp    (* x.y[z] == SubscriptVar(x.y, z) *)
 
 and exp = VarExp of var * pos 		(* el pos es siempre la linea donde aparece *)
 		| UnitExp of pos
