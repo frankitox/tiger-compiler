@@ -65,6 +65,7 @@ fun tiposIguales (TRecord _) TNil = true
 		(* end *)raise Fail "No debería pasar! (2)"
   | tiposIguales a b = (a=b)
 
+(* val transExp : venv * tenv -> expty *)
 fun transExp(venv, tenv) =
 	let fun error(s, p) = raise Fail ("Error -- línea "^Int.toString(p)^": "^s^"\n")
 			(* trexp: exp -> expty *)
@@ -142,10 +143,10 @@ fun transExp(venv, tenv) =
 			let
 				val t1 = tabSaca(s,venv) 
 				val t2 = trexp exp
-				 (*COMPLETAR*)
 			in
-				if t1=t2 then {exp=(), ty=TUnit}
-				else error("missmatch de tipos en simplevar", nl)
+				if tiposIguales t1 (#ty(t2)) then
+					{exp=(), ty=TUnit}
+				 else error("missmatch de tipos en simplevar", nl)
 			end
 		| trexp(AssignExp({var, exp}, nl)) =
 			{exp=(), ty=TUnit} (*COMPLETAR*)
@@ -201,6 +202,7 @@ fun transExp(venv, tenv) =
 		| trdec (venv,tenv) (TypeDec ts) =
 			(venv, tenv, []) (*COMPLETAR*)
 	in trexp end
+
 fun transProg ex =
 	let	val main =
 				LetExp({decs=[FunctionDec[({name="_tigermain", params=[],
