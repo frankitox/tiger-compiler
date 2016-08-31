@@ -67,6 +67,7 @@ fun tiposIguales (TRecord _) TNil = true
 
 fun transExp(venv, tenv) =
 	let fun error(s, p) = raise Fail ("Error -- línea "^Int.toString(p)^": "^s^"\n")
+			(* trexp: exp -> expty *)
 		fun trexp(VarExp v) = trvar(v)
 		| trexp(UnitExp _) = {exp=(), ty=TUnit}
 		| trexp(NilExp _)= {exp=(), ty=TNil}
@@ -138,7 +139,14 @@ fun transExp(venv, tenv) =
 				val {exp, ty=tipo} = hd(rev lexti)
 			in	{ exp=(), ty=tipo } end
 		| trexp(AssignExp({var=SimpleVar s, exp}, nl)) =
-			{exp=(), ty=TUnit} (*COMPLETAR*)
+			let
+				val t1 = tabSaca(s,venv) 
+				val t2 = trexp exp
+				 (*COMPLETAR*)
+			in
+				if t1=t2 then {exp=(), ty=TUnit}
+				else error("missmatch de tipos en simplevar", nl)
+			end
 		| trexp(AssignExp({var, exp}, nl)) =
 			{exp=(), ty=TUnit} (*COMPLETAR*)
 		| trexp(IfExp({test, then', else'=SOME else'}, nl)) =

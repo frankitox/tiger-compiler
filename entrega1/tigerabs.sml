@@ -5,8 +5,8 @@ type symbol = string
 type pos = int
 
 datatype var = SimpleVar of symbol
-  | FieldVar of var * symbol
-  | SubscriptVar of var * exp
+  | FieldVar of var * symbol  (* a.b.c  == FieldVar (a.b, c) *)
+  | SubscriptVar of var * exp (* a.b[c.d] == SubscriptVar (a.b, c.d) *)
 
 and exp = VarExp of var * pos
   | UnitExp of pos
