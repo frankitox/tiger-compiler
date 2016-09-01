@@ -1,5 +1,5 @@
 let 
-	val i:=10
+	var i:=10
 in
 	print(chr(65+i)); 
 	0
