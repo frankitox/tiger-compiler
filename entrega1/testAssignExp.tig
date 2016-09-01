@@ -1,0 +1,6 @@
+let 
+	val i:=10
+in
+	print(chr(65+i)); 
+	0
+end

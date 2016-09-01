@@ -22,7 +22,7 @@ let
   function isin (n: int, xs: lista) : int = 
     if (xs = nil) then xs
     else if (n = xs.item) then 1
-    else isin (n, xs.resto)
+         else isin (n, xs.resto)
   function remove (n: int, ns: lista) : lista =
     let
       function real_remove (n: int, ns: lista) : lista =

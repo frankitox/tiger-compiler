@@ -176,29 +176,56 @@ fun transExp(venv, tenv) =
 				val ttest = trexp test
 				val tbody = trexp body
 			in
-				if tipoReal(#ty ttest, tenv) = TInt andalso #ty tbody = TUnit then {exp=(), ty=TUnit}
-				else if tipoReal(#ty ttest, tenv) <> TInt then error("Error de tipo en la condición", nl)
-				else error("El cuerpo de un while no puede devolver un valor", nl)
+				if tipoReal(#ty ttest, tenv) = TInt andalso #ty tbody = TUnit 
+					then {exp=(), ty=TUnit}
+					else if tipoReal(#ty ttest, tenv) <> TInt 	
+							then error("Error de tipo en la condición", nl)
+							else error("El cuerpo de un while no puede devolver un valor", nl)
 			end
 		| trexp(ForExp({var, escape, lo, hi, body}, nl)) =
-			{exp=(), ty=TUnit} (*COMPLETAR*)
-		| trexp(LetExp({decs, body}, _)) =
+			{exp=(), ty=TUnit}  
+			(*pasos a seguir
+				for lo to hi do exp.
+			lo de tipo int, hi de tipo int
+			insertar var creando un nuevo env
+			-
+			procesar body usando este nuevo env
+			-
+			chequear que body sea Unit*)
 			let
-				val (venv', tenv', _) = List.foldl (fn (d, (v, t, _)) => trdec(v, t) d) (venv, tenv, []) decs
-				val {exp=expbody,ty=tybody}=transExp (venv', tenv') body
-			in 
-				{exp=(), ty=tybody}
+				val tlo = trexp lo
+				val thi = trexp hi
+				val venv2 = 
+				val tbody = trexp body
+			in
+				if tipoReal(#ty ttest, tenv) = TInt andalso #ty tbody = TUnit 
+					then {exp=(), ty=TUnit}
+					else if tipoReal(#ty ttest, tenv) <> TInt 	
+							then error("Error de tipo en la condición", nl)
+							else error("El cuerpo de un while no puede devolver un valor", nl)
 			end
+
+
+
+		| trexp(LetExp({decs, body}, _)) =
+			let	val (venv', tenv', _) = List.foldl (fn (d, (v, t, _)) => trdec(v, t) d) (venv, tenv, []) decs
+				val {exp=expbody,ty=tybody}=transExp (venv', tenv') body
+			in 	{exp=(), ty=tybody}	end
 		| trexp(BreakExp nl) =
 			{exp=(), ty=TUnit} (*COMPLETAR*)
+			(*??*)
 		| trexp(ArrayExp({typ, size, init}, nl)) =
 			{exp=(), ty=TUnit} (*COMPLETAR*)
+			(*que error de tipo puedo tener al crear un array?
+			o tengo que agregarlo a la lista de variables?*)
+
 		and trvar(SimpleVar s, nl) =
 			{exp=(), ty=TUnit} (*COMPLETAR*)
 		| trvar(FieldVar(v, s), nl) =
 			{exp=(), ty=TUnit} (*COMPLETAR*)
 		| trvar(SubscriptVar(v, e), nl) =
 			{exp=(), ty=TUnit} (*COMPLETAR*)
+
 		and trdec (venv, tenv) (VarDec ({name,escape,typ=NONE,init},pos)) = 
 			(venv, tenv, []) (*COMPLETAR*)
 		| trdec (venv,tenv) (VarDec ({name,escape,typ=SOME s,init},pos)) =
