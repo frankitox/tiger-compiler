@@ -192,7 +192,7 @@ fun transExp(venv, tenv) =
 			procesar body usando este nuevo env
 			-
 			chequear que body sea Unit*)
-			let
+			(*let
 				val tlo = trexp lo
 				val thi = trexp hi
 				val venv2 = 
@@ -203,7 +203,7 @@ fun transExp(venv, tenv) =
 					else if tipoReal(#ty ttest, tenv) <> TInt 	
 							then error("Error de tipo en la condición", nl)
 							else error("El cuerpo de un while no puede devolver un valor", nl)
-			end
+			end*)
 
 
 
@@ -236,10 +236,11 @@ fun transExp(venv, tenv) =
 			(venv, tenv, []) (*COMPLETAR*)
 	in trexp end
 
+(* transProg: exp -> unit *)
 fun transProg ex =
 	let	val main =
 				LetExp({decs=[FunctionDec[({name="_tigermain", params=[],
-								result=NONE, body=ex}, 0)]],
+                                    result=NONE,       body=ex}, 0)]],
 						body=UnitExp 0}, 0)
 		val _ = transExp(tab_vars, tab_tipos) main
 	in	print "bien!\n" end
