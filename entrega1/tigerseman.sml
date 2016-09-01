@@ -191,8 +191,8 @@ fun transExp(venv, tenv) =
 			-
 			procesar body usando este nuevo env
 			-
-			chequear que body sea Unit*)
-			(*let
+			chequear que body sea Unit
+			let
 				val tlo = trexp lo
 				val thi = trexp hi
 				val venv2 = 
@@ -203,8 +203,8 @@ fun transExp(venv, tenv) =
 					else if tipoReal(#ty ttest, tenv) <> TInt 	
 							then error("Error de tipo en la condición", nl)
 							else error("El cuerpo de un while no puede devolver un valor", nl)
-			end*)
-
+			end
+			*)
 
 
 		| trexp(LetExp({decs, body}, _)) =
@@ -219,10 +219,42 @@ fun transExp(venv, tenv) =
 			(*que error de tipo puedo tener al crear un array?
 			o tengo que agregarlo a la lista de variables?*)
 
-		and trvar(SimpleVar s, nl) =
-			{exp=(), ty=TUnit} (*COMPLETAR*)
-		| trvar(FieldVar(v, s), nl) =
-			{exp=(), ty=TUnit} (*COMPLETAR*)
+
+
+(*
+type venv = (string, EnvEntry) tigertab.Tabla
+datatype EnvEntry = 
+	VIntro	(* int readonly *)
+	| Var of {ty: Tipo}
+	| Func of {
+		level: unit, 
+		label: tigertemp.label (*string*),	
+		formals: Tipo list, 
+		result: Tipo, 
+		extern: bool (*es para diferenciar funciones de biblioteca*)
+		}
+datatype var = SimpleVar of symbol (* x *)
+	| FieldVar of var * symbol	   (* x.y.z  == FieldVar(x.y, z) *)
+	| SubscriptVar of var * exp    (* x.y[z] == SubscriptVar(x.y, z) *)
+*)
+		and trvar(SimpleVar s, nl) = (
+		(*aca tengo que fijarme si esta definida y que tipo tiene.
+		tengo que devolver el tipo*)			
+			case tabSaca(s, venv) of
+			Var t => {exp=(), ty= #ty(t) }
+			| _   => error("no definida la variable en trvar(SimpleVar....)", nl)
+		)
+		| trvar(FieldVar(v, s), nl) = (
+			case #ty(trvar(v,nl)) of
+			TRecord (cs, u) => (
+				(* cs tiene tipo (string * Tipo ref * int) list *)
+					case (List.find (fn (str,typ,i) => s=str) cs) of
+					SOME (str,typ,i) => {exp=(), ty= !typ }
+					| NONE 			 => error("s no esta en el record v (trvar FieldVar)", nl)
+				)
+
+			| _				=> error("FieldVar v no es un TRecord", nl) 
+		)
 		| trvar(SubscriptVar(v, e), nl) =
 			{exp=(), ty=TUnit} (*COMPLETAR*)
 
