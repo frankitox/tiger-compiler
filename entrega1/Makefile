@@ -45,6 +45,11 @@ maxargs: tigerabs.uo
     ejercicio4/maxargs.sig \
     ejercicio4/maxargs.sml
 
+cantplus: tigerabs.uo
+	$(MOSMLC) -I ejercicio4 \
+    ejercicio4/cantplus.sig \
+    ejercicio4/cantplus.sml
+
 getAST.uo: tigergrm.uo tigerlex.uo
 	$(MOSMLC) getAST.sig getAST.sml
 
