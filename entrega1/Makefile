@@ -24,22 +24,29 @@ EXEFILE=
 .SUFFIXES :
 .SUFFIXES : .sig .sml .ui .uo
 
-GRALOBJS= tigerabs.uo tigergrm.uo tigerlex.uo tigermain.uo \
-	tigernlin.uo tigerpp.uo tigerescap.uo tigertab.uo tigerseman.uo tigertemp.uo tigertopsort.uo tigermuestratipos.uo
+GRALOBJS= tigerabs.uo tigergrm.uo tigerlex.uo \
+  tigermain.uo tigernlin.uo tigerpp.uo \
+  tigerescap.uo tigertab.uo tigerseman.uo \
+  tigertemp.uo tigertopsort.uo tigermuestratipos.uo
 
 all: tiger
 
 tiger: $(GRALOBJS) $(OBJSGEN)
 	$(MOSMLL) -o tiger $(EXEFILE) tigermain.uo
 
-tigergrm.sml tigergrm.sig: tigergrm.y 
+tigergrm.sml tigergrm.sig: tigergrm.y
 	$(MOSMLYACC) tigergrm.y
 
 tigerlex.sml: tigerlex.lex
 	$(MOSMLLEX) tigerlex.lex
 
-ejercicio4: 
-	$(MOSMLC) tigerabs.sml ejercicio4.sig ejercicio4.sml
+maxargs: tigerabs.uo
+	$(MOSMLC) -I ejercicio4 \
+    ejercicio4/maxargs.sig \
+    ejercicio4/maxargs.sml
+
+getAST.uo: tigergrm.uo tigerlex.uo
+	$(MOSMLC) getAST.sig getAST.sml
 
 clean:
 	$(REMOVE) Makefile.bak
@@ -52,10 +59,13 @@ clean:
 	$(REMOVE) *.uo
 	$(REMOVE) errlist
 	$(REMOVE) *.o
+	$(REMOVE) tiger
 
+# Ésto permite hacer `make filename.ui`
+# lo cual ejecutará `$(MOSMLC) filename.sig`.
 .sig.ui:
 	$(MOSMLC) $<
-
+# Lo mismo que el caso anterior.
 .sml.uo:
 	$(MOSMLC) $<
 
