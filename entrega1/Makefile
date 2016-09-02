@@ -38,6 +38,9 @@ tigergrm.sml tigergrm.sig: tigergrm.y
 tigerlex.sml: tigerlex.lex
 	$(MOSMLLEX) tigerlex.lex
 
+ejercicio4: 
+	$(MOSMLC) tigerabs.sml ejercicio4.sig ejercicio4.sml
+
 clean:
 	$(REMOVE) Makefile.bak
 	$(REMOVE) tigergrm.output
