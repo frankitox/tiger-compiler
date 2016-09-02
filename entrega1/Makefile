@@ -55,8 +55,8 @@ clean:
 	$(REMOVE) tigergrm.sml
 	$(REMOVE) tigerlex.sml
 	$(REMOVE) tigermain
-	$(REMOVE) *.ui
-	$(REMOVE) *.uo
+	rm -rf *.ui
+	rm -rf *.uo
 	$(REMOVE) errlist
 	$(REMOVE) *.o
 	$(REMOVE) tiger
