@@ -1,0 +1,49 @@
+a := 10
+AssignExp{var=SimpleVar(a),exp=10}
+
+for i := 0 to c do print (".")
+ForExp {
+  var=i,
+  escape=false,
+  lo=0,
+  hi=VarExp (SimpleVar (c)),
+  body=CallExp {
+    func=print,
+    args=["."]
+  }
+}
+
+f[a+1].data[0]
+VarExp(
+  SubscriptVar(
+    FieldVar(
+      SubscriptVar(
+        SimpleVar(f),
+        OpExp {left=VarExp(SimpleVar(a)),
+               oper=PlusOp,right=1
+              }
+      ), data
+    ), 0
+  )
+)
+
+let
+var f := 10
+in
+f(f, f); f
+end
+LetExp{decs=[VarDec{name=f,escape=false,typ=NONE,init=10}],
+ body=SeqExp([CallExp{func=f,args=[VarExp(SimpleVar(f))VarExp(SimpleVar(f))]}
+      VarExp(SimpleVar(f))])}
+
+e) type lista = {item:int, resto:lista}
+Porque no es una exp?
+
+if row[r]=0 & a<b then g(r)
+IfExp{
+test=IfExp{
+     test=OpExp{left=VarExp(SubscriptVar(SimpleVar(row),VarExp(SimpleVar(r)))),
+           oper=EqOp,right=0},
+     then'=OpExp{left=VarExp(SimpleVar(a)),oper=LtOp,
+            right=VarExp(SimpleVar(b))},else'=0},
+then'=CallExp{func=g,args=[VarExp(SimpleVar(r))]},else'=NONE}
