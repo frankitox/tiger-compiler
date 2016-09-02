@@ -19,6 +19,8 @@ fun (* maxargs: exp -> int *)
 | maxargs (IntExp(_))    = 0
 | maxargs (StringExp(_)) = 0
 
+(* No podría ser que un arg haga un print
+   zarpado? *)
 | maxargs (CallExp ({func=s, args=args}, _)) =
     if s = "print" then length args else 0
 
