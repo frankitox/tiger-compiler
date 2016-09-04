@@ -16,11 +16,6 @@ REMOVE=rm -f
 MOVE=mv
 EXEFILE=
 
-# DOS
-#REMOVE=del
-#MOVE=move
-#EXEFILE=.exe
-
 .SUFFIXES :
 .SUFFIXES : .sig .sml .ui .uo
 
@@ -29,7 +24,7 @@ GRALOBJS= tigerabs.uo tigergrm.uo tigerlex.uo \
   tigerescap.uo tigertab.uo tigerseman.uo \
   tigertemp.uo tigertopsort.uo tigermuestratipos.uo
 
-all: tiger
+all: tiger ejercicio4 ejercicio7
 
 tiger: $(GRALOBJS) $(OBJSGEN)
 	$(MOSMLL) -o tiger $(EXEFILE) tigermain.uo
@@ -39,6 +34,11 @@ tigergrm.sml tigergrm.sig: tigergrm.y
 
 tigerlex.sml: tigerlex.lex
 	$(MOSMLLEX) tigerlex.lex
+
+ejercicio7: tigersres.uo
+	$(MOSMLC) ejercicio7.sig ejercicio7.sml
+
+ejercicio4: maxargs cantplus
 
 maxargs: tigerabs.uo
 	$(MOSMLC) -I ejercicio4 \
@@ -50,7 +50,7 @@ cantplus: tigerabs.uo
     ejercicio4/cantplus.sig \
     ejercicio4/cantplus.sml
 
-getAST.uo: tigergrm.uo tigerlex.uo
+getAST: tigergrm.uo tigerlex.uo
 	$(MOSMLC) getAST.sig getAST.sml
 
 clean:
