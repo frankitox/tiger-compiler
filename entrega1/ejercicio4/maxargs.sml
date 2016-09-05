@@ -2,8 +2,7 @@ structure maxargs :> maxargs =
 struct
 
 open tigerabs
-open Int (* Lo abro al pedo, pa no romper
-            el highlighting *)
+
 (*
  * Helper functions: *)
 val maximum = foldl max 0
