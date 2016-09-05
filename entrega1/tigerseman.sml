@@ -272,10 +272,11 @@ datatype var = SimpleVar of symbol (* x *)
 			(venv, tenv, []) (*COMPLETAR*)
 	in trexp end
 
+(* transProg: exp -> unit *)
 fun transProg ex =
 	let	val main =
 				LetExp({decs=[FunctionDec[({name="_tigermain", params=[],
-								result=NONE, body=ex}, 0)]],
+                                    result=NONE,       body=ex}, 0)]],
 						body=UnitExp 0}, 0)
 		val _ = transExp(tab_vars, tab_tipos) main
 	in	print "bien!\n" end
