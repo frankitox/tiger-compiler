@@ -257,10 +257,11 @@ datatype var = SimpleVar of symbol (* x *)
 		)
 		| trvar(SubscriptVar(v, e), nl) =
 			case #ty(trvar(v,nl)) of 
-				TArray (rt,u) => {exp=(), ty= !rt }
+				TArray (rt,u) => (
+				  case #ty(trexp(e)) of
+				    TInt => {exp=(), ty= !rt }
+				    | _  => error("e no es de tipo int (trvar SubscriptVar)", nl) )
 				| _           => error("v no es de tipo array (trvar SubscriptVar)", nl)
-
-			{exp=(), ty=TUnit} (*COMPLETAR*)
 
 		and trdec (venv, tenv) (VarDec ({name,escape,typ=NONE,init},pos)) = 
 			(venv, tenv, []) (*COMPLETAR*)
