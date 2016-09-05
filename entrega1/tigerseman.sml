@@ -256,6 +256,10 @@ datatype var = SimpleVar of symbol (* x *)
 			| _				=> error("FieldVar v no es un TRecord", nl) 
 		)
 		| trvar(SubscriptVar(v, e), nl) =
+			case #ty(trvar(v,nl)) of 
+				TArray (rt,u) => {exp=(), ty= !rt }
+				| _           => error("v no es de tipo array (trvar SubscriptVar)", nl)
+
 			{exp=(), ty=TUnit} (*COMPLETAR*)
 
 		and trdec (venv, tenv) (VarDec ({name,escape,typ=NONE,init},pos)) = 
