@@ -65,6 +65,9 @@ fun tiposIguales (TRecord _) TNil = true
 		(* end *)
   | tiposIguales a b = (a=b)
 
+
+val listAnd = foldl (fn (t1, t2) => t1 andalso t2) true
+
 (* val transExp : venv * tenv -> expty *)
 fun transExp(venv, tenv) =
 	let fun error(s, p) = raise Fail ("Error -- línea "^Int.toString(p)^": "^s^"\n")
@@ -74,8 +77,27 @@ fun transExp(venv, tenv) =
 		| trexp(NilExp _)= {exp=(), ty=TNil}
 		| trexp(IntExp(i, _)) = {exp=(), ty=TInt}
 		| trexp(StringExp(s, _)) = {exp=(), ty=TString}
-		| trexp(CallExp({func, args}, nl)) =
-			{exp=(), ty=TUnit} (*COMPLETAR*)
+		| trexp(CallExp({func, args}, nl)) = (
+			case tabBusca(func,venv) of
+				SOME (Func{formals=form, result=res, ...}) =>
+					let
+						val targs  = map (fn (ex) => #ty(trexp ex)) args
+						val zipped = ListPair.zip(form, targs)
+						val bools  = map (fn (t1, t2) => tiposIguales t1 t2) zipped
+					in
+						if listAnd bools then
+							{exp=(), ty=res}
+						else
+							error("Error los tipos de los argumentos no coinciden (trexp CallExp)", nl)
+					end	
+					(*let var(argumentos) = map (fn (ex) => #ty(trexp ex)) args
+
+					if  = form then 
+						{exp=(), ty=res}
+					else error("Error los tipos de los argumentos no coinciden (trexp CallExp)", nl) *)
+			 	| SOME _ => error("Error func no es de tipo Func (trexp CallExp)", nl)
+				| NONE   => error("Error no existe la funcion func (trexp CallExp)", nl)
+			)
 		| trexp(OpExp({left, oper=EqOp, right}, nl)) =
 			let
 				val {exp=_, ty=tyl} = trexp left
@@ -183,60 +205,39 @@ fun transExp(venv, tenv) =
 							else error("El cuerpo de un while no puede devolver un valor", nl)
 			end
 		| trexp(ForExp({var, escape, lo, hi, body}, nl)) =
-			{exp=(), ty=TUnit}  
-			(*pasos a seguir
-				for lo to hi do exp.
-			lo de tipo int, hi de tipo int
-			insertar var creando un nuevo env
-			-
-			procesar body usando este nuevo env
-			-
-			chequear que body sea Unit
-			let
-				val tlo = trexp lo
-				val thi = trexp hi
-				val venv2 = 
-				val tbody = trexp body
-			in
-				if tipoReal(#ty ttest, tenv) = TInt andalso #ty tbody = TUnit 
-					then {exp=(), ty=TUnit}
-					else if tipoReal(#ty ttest, tenv) <> TInt 	
-							then error("Error de tipo en la condición", nl)
-							else error("El cuerpo de un while no puede devolver un valor", nl)
+			let 
+				val tlo   = #ty(trexp lo)
+				val thi   = #ty(trexp hi)
+				val venv2 = tabInserta(var, VIntro, venv)
+				val tbody = #ty( transExp(venv2, tenv) body )
+			in 
+				if tiposIguales tlo TInt andalso tiposIguales thi TInt andalso tiposIguales tbody TUnit 
+						then {exp=(), ty=TUnit} 
+						else if tiposIguales tlo TInt andalso tiposIguales thi TInt
+							then error("El cuerpo de un for no puede devolver un valor", nl)
+							else if tiposIguales tlo TInt
+								then error("Error hi no es de tipo int", nl)
+								else error("Error lo no es de tipo int", nl)
 			end
-			*)
-
-
 		| trexp(LetExp({decs, body}, _)) =
 			let	val (venv', tenv', _) = List.foldl (fn (d, (v, t, _)) => trdec(v, t) d) (venv, tenv, []) decs
 				val {exp=expbody,ty=tybody}=transExp (venv', tenv') body
 			in 	{exp=(), ty=tybody}	end
-		| trexp(BreakExp nl) =
-			{exp=(), ty=TUnit} (*COMPLETAR*)
-			(*??*)
+		| trexp(BreakExp nl) = {exp=(), ty=TUnit} (*COMPLETAR PERO MAS ADELANTE*)
 		| trexp(ArrayExp({typ, size, init}, nl)) =
-			{exp=(), ty=TUnit} (*COMPLETAR*)
-			(*que error de tipo puedo tener al crear un array?
-			o tengo que agregarlo a la lista de variables?*)
+(*  (ArrayExp  of {typ: symbol, size: exp, init: exp} * pos)
+	let type A = array of int
+	var a:=A[100] of 1 		*)
+			case tabBusca(typ, tenv) of 
+				SOME (TArray(tref,u)) =>
+					if tiposIguales (#ty(trexp size)) TInt then
+						if tiposIguales (#ty(trexp init)) (!tref) then 
+							{exp=(), ty= !tref}
+						else error("Error init no es de tipo compatible (trexp ArrayExp)", nl)
+					else error("Error size no es de tipo TInt o igual (trexp ArrayExp)", nl)
+			 	| SOME _ => error("Error typ no es de tipo TArray", nl)
+				| NONE   => error("Error no existe el tipo typ (trexp ArrayExp)", nl)
 
-
-
-(*
-type venv = (string, EnvEntry) tigertab.Tabla
-datatype EnvEntry = 
-	VIntro	(* int readonly *)
-	| Var of {ty: Tipo}
-	| Func of {
-		level: unit, 
-		label: tigertemp.label (*string*),	
-		formals: Tipo list, 
-		result: Tipo, 
-		extern: bool (*es para diferenciar funciones de biblioteca*)
-		}
-datatype var = SimpleVar of symbol (* x *)
-	| FieldVar of var * symbol	   (* x.y.z  == FieldVar(x.y, z) *)
-	| SubscriptVar of var * exp    (* x.y[z] == SubscriptVar(x.y, z) *)
-*)
 		and trvar(SimpleVar s, nl) = (
 		(*aca tengo que fijarme si esta definida y que tipo tiene.
 		tengo que devolver el tipo*)			
