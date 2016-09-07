@@ -90,11 +90,6 @@ fun transExp(venv, tenv) =
 						else
 							error("Error los tipos de los argumentos no coinciden (trexp CallExp)", nl)
 					end	
-					(*let var(argumentos) = map (fn (ex) => #ty(trexp ex)) args
-
-					if  = form then 
-						{exp=(), ty=res}
-					else error("Error los tipos de los argumentos no coinciden (trexp CallExp)", nl) *)
 			 	| SOME _ => error("Error func no es de tipo Func (trexp CallExp)", nl)
 				| NONE   => error("Error no existe la funcion func (trexp CallExp)", nl)
 			)
@@ -264,6 +259,14 @@ fun transExp(venv, tenv) =
 				    | _  => error("e no es de tipo int (trvar SubscriptVar)", nl) )
 				| _           => error("v no es de tipo array (trvar SubscriptVar)", nl)
 
+(*
+	trdec: venv * tenv -> decs -> venv * tenv
+	var id := exp (en este caso tengo que asignar el tipo a id)
+	var id:id:=exp (en este caso tengo que chequearel tipo de id con el de exp)
+	type R = {}
+	var r := nil (tiene que dar error)
+	var r:R:=nil (deberia andar)
+*)
 		and trdec (venv, tenv) (VarDec ({name,escape,typ=NONE,init},pos)) = 
 			(venv, tenv, []) (*COMPLETAR*)
 		| trdec (venv,tenv) (VarDec ({name,escape,typ=SOME s,init},pos)) =
