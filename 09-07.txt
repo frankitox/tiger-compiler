@@ -1,0 +1,53 @@
+09-07
+
+Consideraciones para procesar
+Declaraciones de tipos
+
+Tenemos dos espacios de nombres de tipos.
+
+type unique = unit ref
+datatype Tipo = TUnit
+	| TNil
+	| TInt
+	| TString
+	| TArray of Tipo ref  * unique
+	| TRecord of (string * Tipo ref * int) list * unique
+	| TTipo of string 
+
+Y por otro lado el entorno de tipos (string*Tipo) Tabla
+1) int y string NO son reservados
+2) Tratamiento de sinónimos
+	type I = int
+	var i := 10
+	type J = K
+	type K = I
+Ahora
+	type I = int
+	var i := 10
+	type J = I
+	type I = string
+Si hay dependencias de definiciones, estas se tratan de resolver en el batch, antes de buscar afuera.
+3) Dependencias circulares
+	type A = B
+	type B = C
+	type C = D
+	type D = A
+es un error (decision de diseños). Trataremos de reconocer las dependencias circulares con una excepción. 
+	type R = {next:R}
+	ó
+	type R1 = {next:R2}
+	type R2 = {next:R1}
+
+Sort Topológico
+Dado un conjunto de elementos
+e1,e2,e3,...,en
+y un conjunto de pares pred/suc
+(ei,ej) (y se dice que ei precede a ej)
+trata de encontrar una secuencia e1',e2',..,en' de modo que, si ei' está antes de ej', no existe ningún par (ej',ei')
+Con el sort topologico, vamos a ordenar los tipos para ver si tenemos dependencias circulares o no, y para ir eliminando los TTipo
+
+type id1 = id2 (genera el par (id2,id1))
+type id1 = array of id2 (genera el par (id2,id1))
+type id1 = {_:id2, _:id3, ..., _:idk} 
+genera todos los pares (id2,id1), (id3,id1), ... , (idk,id1)
+siempre que ninguno sea de tipo record.

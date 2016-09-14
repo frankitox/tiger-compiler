@@ -70,8 +70,8 @@ val listAnd = foldl (fn (t1, t2) => t1 andalso t2) true
 
 (* val transExp : venv * tenv -> expty *)
 fun transExp(venv, tenv) =
-	let fun error(s, p) = raise Fail ("Error -- línea "^Int.toString(p)^": "^s^"\n")
-			(* trexp: exp -> expty *)
+	let 
+		fun error(s, p) = raise Fail ("Error -- línea "^Int.toString(p)^": "^s^"\n")
 		fun trexp(VarExp v) = trvar(v)
 		| trexp(UnitExp _) = {exp=(), ty=TUnit}
 		| trexp(NilExp _)= {exp=(), ty=TNil}
@@ -220,9 +220,9 @@ fun transExp(venv, tenv) =
 			in 	{exp=(), ty=tybody}	end
 		| trexp(BreakExp nl) = {exp=(), ty=TUnit} (*COMPLETAR PERO MAS ADELANTE*)
 		| trexp(ArrayExp({typ, size, init}, nl)) =
-(*  (ArrayExp  of {typ: symbol, size: exp, init: exp} * pos)
-	let type A = array of int
-	var a:=A[100] of 1 		*)
+			(*  (ArrayExp  of {typ: symbol, size: exp, init: exp} * pos)
+				let type A = array of int
+				var a:=A[100] of 1 		*)
 			case tabBusca(typ, tenv) of 
 				SOME (TArray(tref,u)) =>
 					if tiposIguales (#ty(trexp size)) TInt then
@@ -233,13 +233,13 @@ fun transExp(venv, tenv) =
 			 	| SOME _ => error("Error typ no es de tipo TArray", nl)
 				| NONE   => error("Error no existe el tipo typ (trexp ArrayExp)", nl)
 
-		and trvar(SimpleVar s, nl) = (
-		(*aca tengo que fijarme si esta definida y que tipo tiene.
-		tengo que devolver el tipo*)			
-			case tabSaca(s, venv) of
+		and trvar(SimpleVar s, nl) = 
+			(*aca tengo que fijarme si esta definida y que tipo tiene.
+			tengo que devolver el tipo*)			
+			(case tabSaca(s, venv) of
 			Var t => {exp=(), ty= #ty(t) }
 			| _   => error("no definida la variable en trvar(SimpleVar....)", nl)
-		)
+			)
 		| trvar(FieldVar(v, s), nl) = (
 			case #ty(trvar(v,nl)) of
 			TRecord (cs, u) => (
@@ -250,7 +250,7 @@ fun transExp(venv, tenv) =
 				)
 
 			| _				=> error("FieldVar v no es un TRecord", nl) 
-		)
+			)
 		| trvar(SubscriptVar(v, e), nl) =
 			case #ty(trvar(v,nl)) of 
 				TArray (rt,u) => (
@@ -260,18 +260,55 @@ fun transExp(venv, tenv) =
 				| _           => error("v no es de tipo array (trvar SubscriptVar)", nl)
 
 (*
-	trdec: venv * tenv -> decs -> venv * tenv
-	var id := exp (en este caso tengo que asignar el tipo a id)
-	var id:id:=exp (en este caso tengo que chequearel tipo de id con el de exp)
-	type R = {}
-	var r := nil (tiene que dar error)
-	var r:R:=nil (deberia andar)
+datatype EnvEntry = 
+	VIntro	(* int readonly *)
+	| Var of {ty: Tipo}
+	| Func of { level: unit, label: tigertemp.label (*string*),	
+				formals: Tipo list, result: Tipo, 
+				extern: bool 	}
+and dec =
+    FunctionDec of ({name: symbol, params: field list, result: symbol option, body: exp} * pos) list
+  | VarDec      of {name: symbol, escape: bool ref, typ: symbol option, init: exp} * pos
+  | TypeDec     of ({name: symbol, ty: ty} * pos) list
+
+field = {name: symbol, escape: bool ref, typ: ty} *)
+
+(* transformarFunctionDecEnEnvEntry ({name = n,params = ps, result = r, body = b}) =
+	let fs = map (fn (f) => #typ(f)) ps (*ver como pasar de ty a Tipo*)
+		case r of
+			SOME s => val res = tabSaca(s,tenv)
+			| NONE => val res = TUnit
+	in Fun({level = (), label = n, formals = fs, result = res, extern = False})
 *)
 		and trdec (venv, tenv) (VarDec ({name,escape,typ=NONE,init},pos)) = 
-			(venv, tenv, []) (*COMPLETAR*)
+			(* 	var id := exp (en este caso tengo que asignar el tipo a id)  
+			var r := nil (tiene que dar error) *)
+			let val t    = #ty(trexp init)
+			in  
+				if tiposIguales t TNil then 
+					error("No se puede asignar NIL trdec VarDec.1", pos)
+				else
+					(tabRInserta(name, Var({ty = t}), venv),
+					 tenv, [])
+			end
 		| trdec (venv,tenv) (VarDec ({name,escape,typ=SOME s,init},pos)) =
-			(venv, tenv, []) (*COMPLETAR*)
-		| trdec (venv,tenv) (FunctionDec fs) =
+			(* 	(var id:id:=exp) en este caso tengo que chequearel tipo de id con el de exp
+				type R = {}
+				var r:R:=nil (deberia andar) *)
+			let 
+				val texp  = #ty(trexp init)
+				val tdado = tabSaca(s,tenv)
+			in  
+				if tiposIguales texp tdado then 
+					( tabRInserta(name, Var({ty = texp}), venv), tenv, [])
+				else
+					error("Error de tipos. No coinciden (trdec VarDec.2)", pos)
+			end
+		| trdec (venv,tenv) (FunctionDec fs) = 
+(*			let 
+				envEntrys = map transformarEnEnvEntry fs
+				venv2 = map tabRInserta () 
+*)
 			(venv, tenv, []) (*COMPLETAR*)
 		| trdec (venv,tenv) (TypeDec ts) =
 			(venv, tenv, []) (*COMPLETAR*)

@@ -1,0 +1,31 @@
+09-12
+
+Análisis semántico 
+y
+Generación de código intermedio
+
+Se van a hacer en paralelo.
+Ver:
+- tigerint.sig  / sml (tigertree)
+- tigertemp.sig / sml
+
+Tenemos un problema: definimos dos datatypes en tigertree (smt, y exp). Pero para interactuar en tigerseman necesitamos un solo tipo; esto lo solucionamos empaquetando exp y stm en un datatype.
+Esto nos soluciona otro problema:
+	Supongamos tener esto: a<b
+	¿En qué contexto se va a usar? Podría ser...
+		if a < b then ... 		acá tiene que guiar un salto
+		c := a < b        		acá tiene que generar 0 ó 1
+		print(chr(65 + (a<b)))  acá tiene que generar 0 ó 1
+
+Definimos (tigertrans,sml)
+	datatype exp = 
+
+
+
+
+
+
+
+
+
+
