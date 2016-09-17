@@ -28,10 +28,9 @@ fun allocArg{parent, frame, level} b = tigerframe.allocArg frame b
 fun allocLocal{parent, frame, level} b = tigerframe.allocLocal frame b
 fun formals{parent, frame, level} = tigerframe.formals frame
 
-datatype exp =
-	Ex of tigertree.exp
-	| Nx of tigertree.stm
-	| Cx of label * label -> tigertree.stm
+datatype exp= Ex of tigertree.exp
+			| Nx of tigertree.stm
+			| Cx of label * label -> tigertree.stm
 
 fun seq [] = EXP (CONST 0)
 	| seq [s] = s
@@ -65,14 +64,11 @@ fun unNx (Ex e) = EXP e
 			LABEL f]
 	end
 
-fun unCx (Nx s) = raise Fail ("Error (UnCx(Nx..))")
-	| unCx (Cx cf) = cf
-	| unCx (Ex (CONST 0)) =
-	(fn (t,f) => JUMP(NAME f, [f]))
-	| unCx (Ex (CONST _)) =
-	(fn (t,f) => JUMP(NAME t, [t]))
-	| unCx (Ex e) =
-	(fn (t,f) => CJUMP(NE, e, CONST 0, t, f))
+fun unCx (Nx s)         = raise Fail ("Error (UnCx(Nx..))")
+  | unCx (Cx cf)        = cf
+  | unCx (Ex (CONST 0)) = (fn (t,f) => JUMP(NAME f, [f]))
+  | unCx (Ex (CONST _)) = (fn (t,f) => JUMP(NAME t, [t]))
+  | unCx (Ex e)         = (fn (t,f) => CJUMP(NE, e, CONST 0, t, f))
 
 fun Ir(e) =
 	let	fun aux(Ex e) = tigerit.tree(EXP e)
@@ -85,6 +81,7 @@ fun Ir(e) =
 		fun aux3 [] = ""
 		| aux3(h::t) = (aux2 h)^(aux3 t)
 	in	aux3 e end
+
 fun nombreFrame frame = print(".globl " ^ tigerframe.name frame ^ "\n")
 
 (* While y for necesitan la u'ltima etiqueta para un break *)

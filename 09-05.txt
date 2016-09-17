@@ -1,0 +1,80 @@
+09-05
+
+OpExp {
+  left: exp,
+  oper: oper,
+  right: exp }
+
+1) Tipo de left equivalente a tipo de right.
+2) Si son Int o equivalentes.
+  Valen todas las ops.
+3) Si son strings o eqs
+  sólo = != <> <= >=
+
+let
+  type R = { i: int }
+  var a := R { i = 10 }
+  var b := a
+in
+  b.i = 11;
+  if a.i = 11 then print ("ok")
+  else print ("Err"); 0
+end
+
+El programa va a imprimir ok, porque b es
+una referencia a a.
+
+4) Si son records o arreglos, podes usar
+=,!=
+5) El tipo sera Int, siempre.
+
+
+AssignExp{var:var,exp:exp}
+1) Que es var? Que es exp? Tienen tipos
+compatibles?
+
+Para var tenemos trvar (ver cod).
+
+Diccionarios o tablas en Tiger.
+Usaremos una tabla generica definida en
+tigertab. Esta basado en un modulo de ML
+llamado Polyhash, pero usa un punto de vista
+mas puro: cada operacion copia la tabla a
+alterar y devuelve una nueva tabla con el
+cambio. Este tipo de cosas la usaremos a lo
+largo del compildor.
+El primer uso sera detectar que variables
+"escapan". Una variable escapa cuando es accedida desde un
+marco de activacion distinto del que la
+aloco. Un marco de activacion (activation
+frame) es un estructura que se crea
+dinamicamente durante la ejecucion de un
+proceso y contiene los parametros de la
+funcion invocada, direccion de retorno,
+variables locales, registros que deben
+preservarse, etc. Normalmente se crea en el
+stack, aunque no es necesario. Las variables
+que escapan se pueden ver en funciones
+anidadas.
+let function f(i:Int) = 
+  let
+    var j:=0
+    function g() = print(chr(i+j))
+  in
+    g() end
+in f(1);0 end
+
+En este caso, i y j escapan.
+Detectamos que variables escapan recorriendo
+e AST del fuente, insertando en una tabla
+cada variable declarada junto al nivel de
+anidamiento (profudidad) de la funcion
+dentro de la cual se declara.
+Necesitamos saber donde se declaran
+variables: 
+- Dentro de un let (LetExpr)
+- Argumentos de funciones (FunctionDec)
+- Indice de un for (ForExp)
+El nivel de anidamiento aumenta cada vez que
+entramos a una funcion (FunctionDec).
+VER TIGERESCAP.SML/SIG
