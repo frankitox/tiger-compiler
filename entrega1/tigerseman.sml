@@ -304,7 +304,19 @@ field = {name: symbol, escape: bool ref, typ: ty} *)
 				else
 					error("Error de tipos. No coinciden (trdec VarDec.2)", pos)
 			end
-		| trdec (venv,tenv) (FunctionDec fs) = 
+		| trdec (venv,tenv) (FunctionDec funcs) = 
+      let
+        fun mapParam ({name=n, escape=boolref, typ=ty}) =
+          tabSaca tenv ty
+          handle noExiste => print ("[trdec, FunctionDec] El tipo del parámetro " ^
+                                    n ^ " no existe, línea: " ^ p)
+        fun toFuncEnvEntry ({name=n, params=p, result=r, body=_}, p) =
+          Func { level   = (),
+                 label   = n,
+                 formals = map mapParam p,
+                 result  = if r = NONE then TUnit else tabSaca tenv (valOf r),
+                 extern  = false }
+          handle noExiste => print "[trdec, FunctionDec] El tipo de retorno no existe, línea: " ^ p
 (*			let 
 				envEntrys = map transformarEnEnvEntry fs
 				venv2 = map tabRInserta () 
@@ -320,6 +332,7 @@ fun transProg ex =
 				LetExp({decs=[FunctionDec[({name="_tigermain", params=[],
                                     result=NONE,       body=ex}, 0)]],
 						body=UnitExp 0}, 0)
-		val _ = transExp(tab_vars, tab_tipos) main
+		(* Cuando se termine el testeo cambiar ex por main. *)
+		val _ = transExp(tab_vars, tab_tipos) ex
 	in	print "bien!\n" end
 end

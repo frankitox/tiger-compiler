@@ -30,7 +30,10 @@ and exp =
                                   var a:=A[100] of 1 *)
 
 and dec =
-    FunctionDec of ({name: symbol, params: field list, result: symbol option, body: exp} * pos) list
+    FunctionDec of ({name:   symbol,
+                     params: field list,
+                     result: symbol option,
+                     body:   exp} * pos) list
   | VarDec      of {name: symbol, escape: bool ref, typ: symbol option, init: exp} * pos
   | TypeDec     of ({name: symbol, ty: ty} * pos) list
 
