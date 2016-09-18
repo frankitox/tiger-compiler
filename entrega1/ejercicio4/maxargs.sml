@@ -2,6 +2,7 @@ structure maxargs :> maxargs =
 struct
 
 open tigerabs
+open Int
 
 (*
  * Helper functions: *)

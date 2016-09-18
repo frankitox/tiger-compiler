@@ -3,6 +3,7 @@ struct
 
 open tigerabs
 open tigersres
+open ejercicio7
 
 type expty = {exp: unit, ty: Tipo}
 
@@ -305,7 +306,7 @@ field = {name: symbol, escape: bool ref, typ: ty} *)
 					error("Error de tipos. No coinciden (trdec VarDec.2)", pos)
 			end
 		| trdec (venv,tenv) (FunctionDec funcs) = 
-      let
+      (*let
         fun mapParam ({name=n, escape=boolref, typ=ty}) =
           tabSaca tenv ty
           handle noExiste => print ("[trdec, FunctionDec] El tipo del parámetro " ^
@@ -316,7 +317,7 @@ field = {name: symbol, escape: bool ref, typ: ty} *)
                  formals = map mapParam p,
                  result  = if r = NONE then TUnit else tabSaca tenv (valOf r),
                  extern  = false }
-          handle noExiste => print "[trdec, FunctionDec] El tipo de retorno no existe, línea: " ^ p
+          handle noExiste => print "[trdec, FunctionDec] El tipo de retorno no existe, línea: " ^ p *)
 (*			let 
 				envEntrys = map transformarEnEnvEntry fs
 				venv2 = map tabRInserta () 
@@ -333,6 +334,7 @@ fun transProg ex =
                                     result=NONE,       body=ex}, 0)]],
 						body=UnitExp 0}, 0)
 		(* Cuando se termine el testeo cambiar ex por main. *)
+    val _ = tabPrint(print, ppEnvEntry, tab_vars)
 		val _ = transExp(tab_vars, tab_tipos) ex
 	in	print "bien!\n" end
 end

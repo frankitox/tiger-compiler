@@ -30,7 +30,7 @@ fun ppEnvEntry' VIntro =
       add_str "function ";
       add_str l;
       add_str "(";
-      map ppTipo' fs;
+      ppFormals fs;
       add_str ") : ";
       ppTipo' res )
  (* ppTipo': Tipo -> unit *)
@@ -59,6 +59,12 @@ and ppTipo' TUnit =
       end
 |   ppTipo' (TTipo (str)) =
       add_str str
+and ppFormals []      = ()
+|   ppFormals (x::[]) = ppTipo' x
+|   ppFormals (x::xs) = (
+      ppTipo' x;
+      add_str ", ";
+      ppFormals xs )
 
 (*  Does all the basic pretty printing
   setup, the real work is in the call to
@@ -82,7 +88,7 @@ fun ppTipo t = (
 
 fun tabPrint(f, g, tab) = (
   let
-    fun f' x = (f x; print ": ")
+    fun f' x = (f x; print ":\t\t")
   in
     tabAAplica(f', g, tab);
     ()

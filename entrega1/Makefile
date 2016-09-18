@@ -35,7 +35,7 @@ tigergrm.sml tigergrm.sig: tigergrm.y
 tigerlex.sml: tigerlex.lex
 	$(MOSMLLEX) tigerlex.lex
 
-ejercicio7: tigertab.uo tigersres.uo
+ejercicio7: Utils.uo tigertab.uo tigersres.uo
 	$(MOSMLC) ejercicio7.sig ejercicio7.sml
 
 ejercicio4: maxargs cantplus
@@ -52,6 +52,9 @@ cantplus: tigerabs.uo
 
 getAST: tigergrm.uo tigerlex.uo
 	$(MOSMLC) getAST.sig getAST.sml
+
+tigerseman.uo: ejercicio7
+	$(MOSMLC) tigerseman.sig tigerseman.sml
 
 clean:
 	$(REMOVE) Makefile.bak

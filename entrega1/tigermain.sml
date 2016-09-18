@@ -37,7 +37,7 @@ fun main(args) =
 		val _  = findEscape(expr) (*no nos interesa el resultado*)
 		val _ = if arbol then tigerpp.exprAst expr else ()
 	in
-		transProg(expr); (*definida en tigersemant*)
+		transProg(expr); (* Definida en tigerseman *)
 		print "yes!!\n"
 	end	handle Fail s => print("Fail: "^s^"\n")
 
