@@ -5,8 +5,9 @@ tigergrm.sml
 tigerlex.sml
 tigermain
 tiger
+errlist
+
 *.ui
 *.uo
-errlist
 *.o
-tiger
+*.swp
