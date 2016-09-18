@@ -35,7 +35,7 @@ tigergrm.sml tigergrm.sig: tigergrm.y
 tigerlex.sml: tigerlex.lex
 	$(MOSMLLEX) tigerlex.lex
 
-ejercicio7: tigersres.uo
+ejercicio7: tigertab.uo tigersres.uo
 	$(MOSMLC) ejercicio7.sig ejercicio7.sml
 
 ejercicio4: maxargs cantplus
