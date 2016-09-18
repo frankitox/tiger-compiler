@@ -1,5 +1,4 @@
-structure tigersres =
-struct
+structure tigersres = struct
 
 open tigerabs
 open tigertab
@@ -7,7 +6,9 @@ open tigertips
 
 datatype EnvEntry =
   VIntro (* int readonly *)
-| Var of {ty: Tipo}
+| Var of {
+    ty: Tipo
+  }
 | Func of {
     level:   unit,
     label:   tigertemp.label (*string*),
@@ -18,4 +19,5 @@ datatype EnvEntry =
   }
 
 val mainLevel = ()
+
 end

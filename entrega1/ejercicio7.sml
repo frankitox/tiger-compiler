@@ -4,56 +4,62 @@ struct
 open tigersres;
 open PP;
 
-var current_indentation = ref 0;
-var indentation_size    = 2;
+ (* ppstrm: ppstream *)
+val ppstrm = PP.mk_ppstream {
+  consumer  =
+    fn s => TextIO.output(TextIO.stdOut, s),
+  linewidth = 79,
+  flush =
+    fn() => TextIO.flushOut TextIO.stdOut
+}
 
-fun break_right pps = (
-  add_break pps (0, 1);
-  begin_block pps CONSISTENT 2 )
-fun break_left pps = (
-  add_break pps (0, 1);
-  end_block pps )
+(* Wrapper for `add_string ppstrm`
+    add_str: string -> unit *)
+fun add_str str = add_string ppstrm str
 
-fun ppEnvEntry' pps ee =
-  let
-    fun
-      ppee VIntro = add_string pps "VIntro"
-    | ppee (Var {ty=tipo}) = (
-        add_string pps "Var {";
-        add_newline pps;
-        add_break pps (10, 0);
-        add_string pps "ty: HI afwoiafmwoaifaw oawi aoiw ao wiao iwoawo awo iawoi aow ia  woa owai aowiaoiw ao iwoia aw faowif aowfia wfoiawf aowif aowif aowfi awoifawofi awf iw";
-        end_block pps;
-        add_newline pps;
-        add_string pps "}" )
-    | ppee (Func record) = (
-        add_string pps "Func {";
-        begin_block pps CONSISTENT 2;
-        add_string pps "HOLA";
-        end_block pps;
-        add_string pps "}" )
-  in
-    begin_block pps CONSISTENT 0;
-    add_newline pps;
-    ppee ee;
-    end_block pps
-  end
+ (* ppEnvEntry': ppstream -> EnvEntry -> unit *)
+fun ppEnvEntry' VIntro =
+      add_str "VIntro"
+|   ppEnvEntry' (Var {ty=tipo}) = (
+      add_str "Var {";
+      add_str "asd";
+      add_str "}" )
+|   ppEnvEntry' (Func record) = (
+      add_str "Func {";
+      add_str "HOLA";
+      add_str "}" )
+(*  ppTipo: ppstream -> Tipo -> unit *)
+(*and ppTipo pps TUnit =
+      add_string pps *)
 
-val ppstrm =
-  PP.mk_ppstream {
-    consumer  =
-      fn s => TextIO.output(TextIO.stdOut, s), 
-    linewidth = 79,
-    flush =
-      fn() => TextIO.flushOut TextIO.stdOut
-  }
-
-fun ppEnvEntry ee =
-  ( ppEnvEntry' ppstrm ee;
-    flush_ppstream ppstrm;
-    TextIO.output(TextIO.stdOut, "\n") )
+(*  Does all the basic pritty printing
+  setup, the real work is in the call to
+  `ppEnvEntry'`.
+    ppEnvEntry: EnvEntry -> unit *)
+fun ppEnvEntry ee = (
+  begin_block ppstrm INCONSISTENT 0;
+  ppEnvEntry' ee;
+  end_block ppstrm;
+  (* ppEnvEntry' ppstrm ee; *)
+  flush_ppstream ppstrm;
+  TextIO.output(TextIO.stdOut, "\n")
+)
 
 end
+
+(*
+datatype EnvEntry =
+  VIntro (* int readonly *)
+| Var of {ty: Tipo}
+| Func of {
+    level:   unit,
+    label:   tigertemp.label (*string*),
+    formals: Tipo list,
+    result:  Tipo,
+    extern:  bool (* Es para diferenciar
+                     funciones de biblioteca. *)
+  }
+*)
 
 (*
 load "ejercicio7";
