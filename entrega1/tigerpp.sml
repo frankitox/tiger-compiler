@@ -3,6 +3,9 @@ structure tigerpp :> tigerpp =
 struct
 *)
 
+(* About pretty printing in SML:
+  http://www.smlnj.org/doc/Compiler/pages/prettyprint.html *)
+
 open tigerabs
 open PP
 

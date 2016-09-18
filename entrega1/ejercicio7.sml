@@ -17,7 +17,7 @@ val ppstrm = PP.mk_ppstream {
     add_str: string -> unit *)
 fun add_str str = add_string ppstrm str
 
- (* ppEnvEntry': ppstream -> EnvEntry -> unit *)
+ (* ppEnvEntry': EnvEntry -> unit *)
 fun ppEnvEntry' VIntro =
       add_str "VIntro"
 |   ppEnvEntry' (Var {ty=tipo}) = (
@@ -28,11 +28,23 @@ fun ppEnvEntry' VIntro =
       add_str "Func {";
       add_str "HOLA";
       add_str "}" )
-(*  ppTipo: ppstream -> Tipo -> unit *)
-(*and ppTipo pps TUnit =
-      add_string pps *)
+ (* ppTipo: Tipo -> unit *)
+and ppTipo TUnit =
+      add_str "unit"
+|   ppTipo TNil =
+      add_str "nil"
+|   ppTipo TInt =
+      add_str "int"
+|   ppTipo TString =
+      add_str "string"
+|   ppTipo (TArray (tref, _) = (
+      add_str "array of "
+      ppTipo !tref )
+|   ppTipo (TRecord (fields, _) = (
+      add_str "{ ";
+      add_str " }" )
 
-(*  Does all the basic pritty printing
+(*  Does all the basic pretty printing
   setup, the real work is in the call to
   `ppEnvEntry'`.
     ppEnvEntry: EnvEntry -> unit *)
