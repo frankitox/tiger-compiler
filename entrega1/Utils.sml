@@ -9,4 +9,6 @@ fun join (x::[]) _    = x
 |   join (x::xs) glue = x ^ glue ^ join xs glue
 |   join []      _    = ""
 
+fun valOrDefault NONE     def = def
+|   valOrDefault (SOME x) _   = x
 end

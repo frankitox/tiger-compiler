@@ -10,11 +10,11 @@ datatype EnvEntry =
     ty: Tipo
   }
 | Func of {
-    level:   unit,
-    label:   tigertemp.label (*string*),
+      level: unit,
+      label: tigertemp.label, (*string*)
     formals: Tipo list,
-    result:  Tipo,
-    extern:  bool (* Es para diferenciar
+     result: Tipo,
+     extern: bool (* Es para diferenciar
                      funciones de biblioteca. *)
   }
 
