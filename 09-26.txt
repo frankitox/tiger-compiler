@@ -1,0 +1,181 @@
+Nota: Si queremos que el sgte programa sea
+correcto:
+
+  let type R = {}
+      var r:R := if 1 then nil else nil
+  in 0 end
+
+Debemos considerar que TNil = TNil en el
+contexto de un if-then-else. Este es el
+único lugar en que TNil = TNil, en los demas
+debe ser TNil != TNil.
+Una manera facil es, si tenemos (x. ej:),
+
+  fun tiposIguales (TNil, TNil) = false
+
+Definir otra función:
+
+  fun tiposIgualesNil (TNil, TNil) = true
+  |   tiposIgualesNil x = tiposIguales x
+
+Por supuesto, tipos IgualesNil es usada en
+if-then-else para comparra los tipos de
+then' y else'. Sigamos con el AST:
+
+  | trexp (CallExp ({fun, args}), nl) =
+      let val {exp=funexp, ty=functy}=trexp func
+          val params = case functy of
+            Func {formals, ...} => formals
+            | _ => error("No es función", nl)
+          val _ = if length args <> length params
+                  then error ("Nro. de args!", nl)
+          val lexpty = List.map 
+      in
+        { ty = result,
+         exp = callExp(funcexp, List.map
+         (#exp) lexpty, result=TUnit }
+      end
+
+En trans
+
+  fun callExp (f, params, proc) =
+    val tmp = newtemp()
+  in
+    if not proc then
+      Ex (ESEQ (seq[CALL(f', params'), MOVE(TEMP
+      tmp, TEMP rv)], TEMP tmp))
+    else Nx(EXP(CALLEXP(...))
+
+Sólo falta un detalle, fabricar el STATIC
+LINK. Recordemos el STATIC LINK es un
+puntero que apunta al último activation
+frame de la función anidante.
+Para determinar cual es el AF de la anidante
+de la función que estamos invocando,
+deberemos ver qué casos posibles tenemos.
+
+  let function f() = (g(); f())
+      function g() =
+        let function h() = (h(); f(); g())
+        in f();h();g() end
+  in 0 end
+
+Deberemos comparar los niveles de anidación
+de llamante y llamado.
+1. Nivel llamante = Nivel llamado
+  => SL llamada = SL llamante
+2. Nivel llamante > Nivel llamado
+  Debe ser Nivel llamada = Nivel llamante + 1
+  => SL llamada = FP llamante
+3. Nivel llamante < Nivel llamada
+Antes de resolver esto, veamos casos
+particulares:
+
+  1 2 3 4
+  f
+    g
+      h
+        k k llama a g, necesita acceder al
+          SL en g, asique vuelve atrás dos
+          veces.
+
+Otro caso:
+
+  f
+    h
+    g
+      j
+        k LLego a k por f - g - j, y llamo a
+          h, como el SL de h es el mismo de
+          g.
+
+En otras palabras,
+
+  val dif = Nivel llamante - Nivel llamada.
+  val tmp = newtemp()
+
+    MOVE (TEMP tmp, TMP F)
+  * MOVE (TEMP tmp, OPER (ADD, TEMP tmp, CONST(2*mSize)))
+  * MOVE (TEMP tmp, MEM (TEMP tmp))
+
+  Devlvemos tmp, que tendrá el SL correcto.
+
+* dif veces.
+
+- Tercer caso para obtener el SL.
+val tmp = newtemp()
+fun genera 0 = []
+|   genera d =
+  seq [MOVE(TEMP tmp, OPER(ADD, TEMP tmp, CONST=2*wSz)),
+       MOVE(TEMP tmp, MEM(TEMP tmp))]@
+      genera(d-1)
+in
+  Ex(ESEQ(seq(MOVE(TEMP tmp, TEMP
+  fp))::genera dif), TEMP tmp)
+end
+
+
+
+args
+-------
+SL
+-------
+ret
+-------
+FP
+-------
+Locales
+
+Posibles optimizaciones en Tree (NO ES
+OBLIGATORIO IMPLEMENTARLAS)
+
+Una optimización busca más eficiencia en
+algún sentido (tiempo, espacio, etc).
+Optimizar no significa que el programa vaya
+a mantener la misma semántica si está mal
+hecho. Caso donde funciona solo optimizado:
+
+  int f(int n) {
+    int i = 1/n;
+    return 0;
+  }
+  int main () {
+    return f(0);
+  }
+
+1. Reemplazar operaciones costosas (que no
+entran en pipeline) por operaciones de
+pipeline.
+  Operaciones de pipeline: +, -, >>, <<, etc.
+  Operaciones costosas: *, /, %
+
+Veamos primero el producto.
+Esto es posible si uno de los operadores es
+constante. En particular, si ctte = 2^k
+  v * 2^k == v << k
+En tree,
+  BINOP(PLUS, e, CONST 2^k) -> BINUP(LSH, e, k)
+
+Generalización, ejemplo:
+
+  6v = v(4+2) = v(2^2+2^1) = v << 2 + v << 1
+
+Esto sirve si los unos 'escasos'.
+Parece que para 15, 31, etc esto no
+conviene. Podemos incluir la resta y la
+propiedad:
+sum{i=0, n, 2^i} = 2^(n+1)-1
+
+2. Cociente. Acá solo se puede aprovechar si
+el divisor es constante. Veamos el caso de
+2^k.
+
+  v/2^k == v >> k Si v >= 0 (def de cociente).
+
+(1) Resto negativo
+(2) Resto positivo
+Si v es negativo, la semántica usual es (1),
+pero si 
+
+Identidad de Bèzout.
+Si A y B 

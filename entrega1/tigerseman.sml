@@ -72,17 +72,23 @@ fun tiposIguales (TRecord _) TNil = true
 
 val listAnd = foldl (fn (t1, t2) => t1 andalso t2) true
 
-(* val transExp : venv * tenv -> expty *)
+ (* transExp: venv * tenv -> expty *)
 fun transExp(venv, tenv) =
   let 
     fun error(s, p) = raise Fail ("Error -- línea "^Int.toString(p)^": "^s^"\n")
-    fun trexp(VarExp v) = trvar(v)
-    | trexp(UnitExp _) = {exp=(), ty=TUnit}
-    | trexp(NilExp _)= {exp=(), ty=TNil}
-    | trexp(IntExp(i, _)) = {exp=(), ty=TInt}
-    | trexp(StringExp(s, _)) = {exp=(), ty=TString}
+    fun
+      trexp(VarExp v) =
+        trvar(v)
+    | trexp(UnitExp _) =
+        {exp=(), ty=TUnit}
+    | trexp(NilExp _) =
+        {exp=(), ty=TNil}
+    | trexp(IntExp(i, _)) =
+        {exp=(), ty=TInt}
+    | trexp(StringExp(s, _)) =
+        {exp=(), ty=TString}
     | trexp(CallExp({func, args}, nl)) = (
-      case tabBusca(func,venv) of
+      case tabBusca (func, venv) of
         SOME (Func{formals=form, result=res, ...}) =>
           let
             val targs  = map (fn (ex) => #ty(trexp ex)) args
@@ -93,8 +99,8 @@ fun transExp(venv, tenv) =
               {exp=(), ty=res}
             else
               error("Error los tipos de los argumentos no coinciden (trexp CallExp)", nl)
-          end  
-         | SOME _ => error("Error func no es de tipo Func (trexp CallExp)", nl)
+          end
+        | SOME _ => error("Error func no es de tipo Func (trexp CallExp)", nl)
         | NONE   => error("Error no existe la funcion func (trexp CallExp)", nl)
       )
     | trexp(OpExp({left, oper=EqOp, right}, nl)) =
@@ -102,8 +108,10 @@ fun transExp(venv, tenv) =
         val {exp=_, ty=tyl} = trexp left
         val {exp=_, ty=tyr} = trexp right
       in
-        if tiposIguales tyl tyr andalso not (tyl=TNil andalso tyr=TNil) andalso tyl<>TUnit then {exp=(), ty=TInt}
-          else error("Tipos no comparables", nl)
+        if tiposIguales tyl tyr andalso not (tyl=TNil andalso tyr=TNil) andalso tyl<>TUnit then
+          {exp=(), ty=TInt}
+        else
+          error("Tipos no comparables", nl)
       end
     | trexp(OpExp({left, oper=NeqOp, right}, nl)) = 
       let
@@ -155,11 +163,13 @@ fun transExp(venv, tenv) =
       in
         {exp=(), ty=tyr}
       end
-    | trexp(SeqExp(s, nl)) =
-      let  val lexti = map trexp s
-        val exprs = map (fn{exp, ty} => exp) lexti
-        val {exp, ty=tipo} = hd(rev lexti)
-      in  { exp=(), ty=tipo } end
+    | trexp (SeqExp (exps, nl)) =
+      let
+        val exptys = map trexp exps
+        val {exp=_, ty=tipo} = List.last exptys
+      in
+        {exp=(), ty=tipo}
+      end
     | trexp(AssignExp({var = SimpleVar s, exp}, nl)) =
       let 
         val t1 = tabSaca(s,tab_tipos)
@@ -218,18 +228,21 @@ fun transExp(venv, tenv) =
                 then error("Error hi no es de tipo int", nl)
                 else error("Error lo no es de tipo int", nl)
       end
-    | trexp (LetExp ({decs = decs,
-                      body = body}, _)) =
+    | trexp (LetExp ({ decs = decs,
+                       body = body }, _)) =
       let
+        fun feedDec (dec, (venv, tenv, _)) =
+          trdec (venv, tenv) dec
         val (venv', tenv', _) =
-          List.foldl (fn (d, (v, t, _)) => trdec (v, t) d) (venv, tenv, []) decs
+          List.foldl feedDec (venv, tenv, []) decs
         val {exp=expbody, ty=tybody} =
           transExp (venv', tenv') body
-        val _ = print "HiExp\n"
       in {exp=(), ty=tybody} end
+
     | trexp (BreakExp nl) =
         (* Completar mas adelante *)
         {exp=(), ty=TUnit}
+
     | trexp(ArrayExp({typ, size, init}, nl)) =
       (*  (ArrayExp  of {typ: symbol, size: exp, init: exp} * pos)
         let type A = array of int
@@ -244,13 +257,14 @@ fun transExp(venv, tenv) =
          | SOME _ => error("Error typ no es de tipo TArray", nl)
         | NONE   => error("Error no existe el tipo typ (trexp ArrayExp)", nl)
 
-    and trvar(SimpleVar s, nl) = 
-      (*aca tengo que fijarme si esta definida y que tipo tiene.
-      tengo que devolver el tipo*)      
-      (case tabSaca(s, venv) of
-      Var t => {exp=(), ty= #ty(t) }
-      | _   => error("no definida la variable en trvar(SimpleVar....)", nl)
-      )
+    and
+      trvar (SimpleVar s, nl) = 
+        (*aca tengo que fijarme si esta definida y que tipo tiene.
+        tengo que devolver el tipo*)      
+        (case tabSaca(s, venv) of
+        Var t => {exp=(), ty= #ty(t) }
+        | _   => error("no definida la variable en trvar(SimpleVar....)", nl)
+        )
     | trvar(FieldVar(v, s), nl) = (
       case #ty(trvar(v,nl)) of
       TRecord (cs, u) => (
@@ -270,38 +284,21 @@ fun transExp(venv, tenv) =
             | _  => error("e no es de tipo int (trvar SubscriptVar)", nl) )
         | _           => error("v no es de tipo array (trvar SubscriptVar)", nl)
 
-(*
-datatype EnvEntry = 
-  VIntro  (* int readonly *)
-  | Var of {ty: Tipo}
-  | Func of { level: unit, label: tigertemp.label (*string*),  
-        formals: Tipo list, result: Tipo, 
-        extern: bool   }
-and dec =
-    FunctionDec of ({name: symbol, params: field list, result: symbol option, body: exp} * pos) list
-  | VarDec      of {name: symbol, escape: bool ref, typ: symbol option, init: exp} * pos
-  | TypeDec     of ({name: symbol, ty: ty} * pos) list
-
-field = {name: symbol, escape: bool ref, typ: ty} *)
-
-(* transformarFunctionDecEnEnvEntry ({name = n,params = ps, result = r, body = b}) =
-  let fs = map (fn (f) => #typ(f)) ps (*ver como pasar de ty a Tipo*)
-    case r of
-      SOME s => val res = tabSaca(s,tenv)
-      | NONE => val res = TUnit
-  in Fun({level = (), label = n, formals = fs, result = res, extern = False})
-*)
-
-and trdec (venv, tenv) (VarDec ({name,escape,typ=NONE,init},pos)) = 
-  (* var id := exp (en este caso tengo que asignar el tipo a id)
-  var r := nil (tiene que dar error) *)
+ (* trdec: (venv * tenv) -> dec -> venv * tenv *  *)
+and trdec (venv, tenv)
+          (VarDec ({name = name,
+                  escape = escape,
+                     typ = NONE,
+                    init = init}, p)) =
   let
-    val t = #ty(trexp init)
+    val initType = #ty(trexp init)
   in
-    if tiposIguales t TNil then 
-      error("No se puede asignar NIL trdec VarDec.1", pos)
+    if tiposIguales initType TNil then
+      error ("[trdec][VarDec] No se puede " ^
+             " asignar nil sin declarar el " ^
+             " tipo", p)
     else
-      (tabRInserta(name, Var({ty = t}), venv),
+      (tabRInserta(name, Var({ty = initType}), venv),
        tenv, [])
   end
 | trdec (venv,tenv) (VarDec ({name,escape,typ=SOME s,init},pos)) =
@@ -318,6 +315,9 @@ and trdec (venv, tenv) (VarDec ({name,escape,typ=NONE,init},pos)) =
     else
       error("Error de tipos. No coinciden (trdec VarDec.2)", pos)
   end
+(*  Get all the function signatures, add them
+  to the venv, and check the body type of each
+  function *)
 | trdec (venv, tenv) (FunctionDec funcs) = 
     let (*toTipo: field -> Tipo *)
       fun toTipo ({ name = name,
@@ -330,6 +330,7 @@ and trdec (venv, tenv) (VarDec ({name,escape,typ=NONE,init},pos)) =
           handle noExiste => raise Fail (
             "[trdec, FunctionDec] El tipo del " ^
             " parámetro " ^ name ^ " no existe")
+       (* toFuncEnvEntry: dec -> EnvEntry *)
       fun toFuncEnvEntry ({ name = name,
                           params = params,
                           result = optRes,
@@ -343,7 +344,7 @@ and trdec (venv, tenv) (VarDec ({name,escape,typ=NONE,init},pos)) =
                 " línea: ", p)
         in
           { level = (),
-            label = name,
+            label = name, (* TODO: Generar un nombre único *)
           formals = map toTipo params,
            result = if (optRes = NONE) then TUnit
                     else getOptRes optRes,
@@ -353,15 +354,34 @@ and trdec (venv, tenv) (VarDec ({name,escape,typ=NONE,init},pos)) =
                 " tipo de retorno no existe,"  ^
                 " línea: ", p)
         end
+       (* toVenv: dec -> (string, EnvEntry) *)
+      fun toVenv (func as ({name=name, ...},_)) =
+        (name, toFuncEnvEntry func)
+      val venv' = map toVenv funcs
+      fun checkBody (FunctionDec (r, p)) =
+        let
+          val name   = #name{r}
+          val body   = #body{r}
+          val optRes = #result{r}
+          val tyres  = #ty{trexp body}
+          val _      = case optRes of
+            SOME symbol => 
+        in
+          if tiposIguales tyres tdado then 
+            ( tabRInserta(name, Var({ty = texp}), venv), tenv, [])
+          else
+            error("Error de tipos. No coinciden (trdec VarDec.2)", pos)
+        end
     in (
-      map toFuncEnvEntry funcs;
       (venv, tenv, [])
     )
       (*COMPLETAR*)
     end
-    | trdec (venv,tenv) (TypeDec ts) =
-      (venv, tenv, []) (*COMPLETAR*)
-  in trexp end
+| trdec (venv,tenv) (TypeDec ts) =
+  (venv, tenv, []) (*COMPLETAR*)
+in (* transExp body: *)
+  trexp
+end
 
  (* transProg: exp -> unit *)
 fun transProg ex =

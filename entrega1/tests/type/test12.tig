@@ -1,0 +1,5 @@
+let
+  function my_fun (a : int, b : string) : int = 1
+in
+  0
+end

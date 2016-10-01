@@ -90,6 +90,7 @@ fun tabPrint(f, g, tab) = (
   let
     fun f' x = (f x; print ":\t\t")
   in
+    print "======= Tabla =======\n";
     tabAAplica(f', g, tab);
     ()
   end )

@@ -1,0 +1,208 @@
+Seguimos con el análisis semántico
+y la generación de código intermedio
+Recordemos que trexp.
+En tigerseman.sml
+
+  fun transExp (tenv, venv) ex =
+    let fun trexp (IntExp n) =
+       { ty = TInt RW,
+        exp = intExp n }
+
+Devolveremos un record. En tigertrans
+
+fun intExp n = Ex (CONST n)
+
+| trexp NilExp = {
+    ty = TNil, exp = nilExp() }
+
+Por supuesto
+  fun nilExp = Ex(CONST 0)
+
+| trexp (IfExp ({test, then', else'=SOME e}, nl)) =
+    let
+      val {exp=testexp, ty=testty} = trexp test
+      val _ = if esInt testty then () else
+        error("test no entera", nl)
+      val {exp=thenexp, ty=thenty} = trexp then'
+      val {exp=elseexp, ty=elsety} = trexp else'
+      val _ = if tiposIguales thenty elsety
+        then () else error("tipos!", nl)
+      val ty = case (thenty, elsety) of
+          (TNil, TNil) => TNil
+        | (TNil, t) => t
+        | (t, TNil) => t
+        | (t, t')   => t
+        in
+          {ty=ty, exp=ifTHenELse(testexp,
+          thenexp, elsexp) }
+        end
+
+En trans
+
+  fun ifThenElse(test, t, e) =
+    let val test' = unCx test
+        val t'    = unEx t
+        val e'    = unEx e
+        val (lv, if, le) =
+          (newLabel(),newLabel(),newLabel())
+        valtmp = new
+    in
+      Ex (ESEQ (
+      Seq [test' (lv, lf),
+           LABEL lv, MOVE(TEMP tmp, t'), JUMP(LABEL le, [le]),
+           LABEL lf, MOVE(TEMP tmp, e'),
+           LABEL le ],
+           TEMP temp ))
+    end
+
+El if sin else como ejercicio.
+Recordar que
+- test debe tener tipo TInt
+- then' debe tener tipo TUnit
+
+Veamos que pasa con las expresiones que
+generan Cx.
+
+| trexp (OpExp ({ oper, left, right }, nl) =
+    (* primero nos ocuparemos de las
+    comparaciones *)
+
+  case oper of
+    GeOp =>
+      let
+        val {leftexp, leftty} = trexp left
+        val {rightexp, rightty} = trexp right
+        val _ = if esIgualSinNil leftty rightty
+          then () else error ("tipos", nl)
+        val _ = case leftty of
+          TRecord _ => error ("> en reord", nl)
+          | _ => ()
+        val _ = case rightty of ...
+        (* también rechacen TUnit y TArray *)
+      in
+        case leftty of
+        TInt => {ty = TInt, exp = cmpOp
+          (GeOp, leftexp, rightexp)
+        | TString => { ty=TInt,
+            exp=strCmpOp(GeOp, leftexp, rightexp}
+
+fun cmpOp (oper, l, r) =
+  let
+    val l' = unEx l
+    val r' = unEx r
+    val oper' = case oper of
+      GeOp => GE
+      | ...
+  in
+    Cx (fun (v, f) =>
+      CJUMP (oper', l', r', v, f))
+  end
+
+
+fun strcmpOp (oper, l, r) =
+  let
+    val l' = unEx l
+    val r' = unEx r
+    val oper' = case oper of ...
+  in
+    Cx (fn (v, f) =>
+      CJUMP (oper', ...)
+  end
+
+Ahora tenemos dos problemas.
+- Cómo detectar un break fuera de while
+y for.
+- Cómo implementar break: con un JUMP a
+una etiqueta al final del ciclo
+correspondiente manteniendo un stack.
+En realidad, una pila de pilas. Esta pila de
+pilas estará en el frame estático.
+Se pushea y popea de la pila de pilas cada
+vez que entro y salgo de una función.
+
+Ejemplo loco:
+
+while 1 do
+  let function f() = break /* ilegal, en
+        otro marco de activación */
+  in f() end
+
+Con esto pasamos al while.
+
+| trexp(WhileExp({test, body}, nl)) =
+    let
+      val {ty = testty, exp = testexp } =
+        trexp test
+      (* ésta función se usará tmb en el for *)
+      val _ = preWhileFor()
+      val {ty = bodyty, exp=bodyexp } = trexp body
+      val _ = postWhileFor()
+      val _ = if esInt testty then () else error ("test", nl)
+      val _ = if bodyty <> TUnit
+        then error("body", nl) else ()
+    in
+      {ty=TUnit, exp =WhileExp(testexp,
+      bodyexp) }
+    end
+
+En trans
+
+  fun preWhileFor () =
+    pushLabel (newLabel())
+  fun postWhileFor () =
+    popLabel ()
+
+  fun whileExp (t, h) =
+    let val t' = unCx t
+        val b' = unNx b
+        val (lsigue, lv, lfin) = (newlabel, newlabel, newlabel)
+    in
+      Nx(seq [
+        LABEL lsigue, t'(lv, lfin),
+        LABEL lv, b',
+        JUMP(LABEL lsigue, [lsigue]),
+        LABEL lfin
+      ])
+
+| trexp (BreakExp, nl) =
+    {ty=TUnit, exp=breakExp() }
+    handle Empty => error("break fuera del
+      ciclo", nl)
+    
+En trans
+
+fun breakExp() =
+  let val lfin = topLabel()
+  in Nx(JUMP(LABEL lfin, [lfin])) end
+
+Veamos que pasa con las expresiones que
+generan Cx
+
+  fun unCx (CONST 0) =
+      fn(_, f) => JUMP (LABEL f, [f])
+  |   unCx (CONST _) =
+      fn(v, _) => JUMP (LABEL v, [v])
+  |   unCx (Cx c) = c
+  |   unCx (Ex e) = fun (v, f) =>
+      CJUMP(EQ, e, CONST 0, f, v)
+  |   unCx(Nx _) = raise Fail "error interno nro 1231244"
+
+| trexp (UnitExp, nl) =
+    { ty=TUnit, exp=unitExp() }
+
+En trans
+
+  fun unitExp () = Ex (CONST 0)
+
+
+| trexp (StringExp (s, nl)) =
+    {ty=TString, exp=stringExp s }
+
+En trans
+  fun stringExp s =
+    let val ls=newlabel()
+        val _ = guardamos el par (ls, s) en
+          el frame estático)
+    in
+      Ex(NAME ls)
+    end

@@ -1,0 +1,7 @@
+/* no error, check if var decs work. */
+
+let
+  var integer := 1
+in
+  1
+end
